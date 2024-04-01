@@ -32,4 +32,4 @@ and install requirements
 
 Finally, configure `configs.py` anrun 
 
-`python3 run main.py`
+`python3 main.py`

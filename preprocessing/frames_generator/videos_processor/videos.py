@@ -2,9 +2,9 @@ import gc
 import cv2
 from tqdm import tqdm
 
-from face_detector.detector import detect_faces
-from images_processor.images import get_pixels
-from utils import save_image_into_file
+from preprocessing.frames_generator.face_detector.detector import detect_faces
+from preprocessing.frames_generator.images_processor.images import get_pixels
+from preprocessing.frames_generator.utils import save_image_into_file
 
 
 def get_frames_from_video(video_path, frames_path, batch_size, thumbnail_size, frames_order_magnitude):

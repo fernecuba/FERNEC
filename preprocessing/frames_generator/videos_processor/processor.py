@@ -3,8 +3,8 @@ import gc
 import time
 import pandas as pd
 
-from utils import create_folder_if_not_exists
-from videos_processor.videos import get_frames_from_video
+from preprocessing.frames_generator.videos_processor.videos import get_frames_from_video
+from preprocessing.frames_generator.utils import create_folder_if_not_exists
 
 
 def process_videos(df: pd.DataFrame, config: dict):
@@ -64,6 +64,13 @@ def save_frames(row, config):
 
 # TODO: this should use "label_file" in df instead of listing dirs
 def create_labels_file(config):
+    """
+    Joins frames created with its files and writes all information into one single file
+    """
+
+    if os.path.exists(config["labels_output_path"]) and os.path.isfile(config["labels_output_path"]):
+        return
+
     # pd.options.mode.chained_assignment = None  # default='warn'
     df = pd.DataFrame()
 

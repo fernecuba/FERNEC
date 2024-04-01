@@ -8,12 +8,12 @@ def run_strategy(config):
 
     if config["source"] == "images":
         if config["verbose"]:
-            print(f"About to process {df.shape} dataframe")
+            print(f"Strategy images: about to process {df.shape} dataframe")
         process_images(df, config)
 
     elif config["source"] == "videos":
         if config["verbose"]:
-            print(f"About to process {df.shape} dataframe")
+            print(f"Strategy videos: about to process {df.shape} dataframe")
         process_videos(df, config)
 
     else:

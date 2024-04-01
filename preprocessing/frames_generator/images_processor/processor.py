@@ -3,11 +3,15 @@ import time
 import numpy as np
 import pandas as pd
 
-from images_processor.images import get_frames, pad_pixels, get_pixels
-from face_detector.detector import detect_faces
+from preprocessing.frames_generator.images_processor.images import get_frames, pad_pixels, get_pixels
+from preprocessing.frames_generator.face_detector.detector import detect_faces
 
 
 def process_images(df: pd.DataFrame, config: dict):
+    """
+    Process images and generates one csv containing pixels and labels
+    """
+
     start_process = time.time()
     df.sort_values(by=config["dataset_sort"], ascending=True, inplace=True)
     df = apply_filters_to_dataset(df, config["dataset_filters"])
@@ -26,10 +30,10 @@ def process_images(df: pd.DataFrame, config: dict):
         if config["is_test_mode"]:
             break
 
-    results_df = join_results(config)
+    processed = join_results(config)
 
     elapsed_time = time.time() - start_process
-    print(f"Processed {len(results_df)} in {(elapsed_time / 60):.2f} minutes")
+    print(f"Processed {processed} in {(elapsed_time / 60):.2f} minutes")
 
 
 def process_dataframe(df_split: pd.DataFrame, i: int, config: dict):
@@ -48,26 +52,29 @@ def process_dataframe(df_split: pd.DataFrame, i: int, config: dict):
         lambda row: get_pixels(row["frame"], row["boxes"], config["thumbnail_size"], return_image=None), axis=1)
 
     df_split.drop(columns=["boxes", "frame"], inplace=True)
-    df_split.to_csv(config["output_path"] + config["temp_path"] + f"{config['dataset']}_{i}.csv", sep=',',
-                    encoding='utf-8', index=False)
+    set_header = (i == 0)
+    df_split.to_csv(config["output_path"] + config["temp_path"] + f"{config['dataset']}_{i}.csv",
+                    sep=',', encoding='utf-8', headers=set_header, index=False)
 
     if config["verbose"]:
         elapsed_time = time.time() - start
         print(f"Processed {len(df_split)} in {(elapsed_time / 60):.2f} minutes")
 
 
-def join_results(config: dict) -> pd.DataFrame:
-    files_processed = [file for file in os.listdir(config["output_path"] + "/temp") if ".csv" in file]
-    results_df = pd.DataFrame()
-    for file_name in files_processed:
-        processed_df = pd.read_csv(config["output_path"] + config["temp_path"] + file_name,
-                                   sep=',', encoding='utf-8')
-        processed_df["pixels"] = processed_df["pixels"].apply(eval)
-        results_df = pd.concat([results_df, processed_df])
+def join_results(config: dict) -> int:
+    output_file_path = config["output_path"] + f"{config['dataset']}.csv"
+    if os.path.exists(output_file_path) and os.path.isfile(output_file_path):
+        with open(output_file_path, "r") as file:
+            return len(file.readlines())
 
-    results_df.to_csv(config["output_path"] + f"{config['dataset']}.csv", sep=',',
-                      encoding='utf-8', index=False)
-    return results_df
+    with open(output_file_path, "a") as write_file:
+        for i in range(config["array_split"]):
+            with open(config["output_path"] + config["temp_path"] + f"{config['dataset']}_{i}.csv", "rt") as read_file:
+                for line in read_file:
+                    write_file.write(line)
+
+    with open(output_file_path, "r") as file:
+        return len(file.readlines())
 
 
 def apply_filters_to_dataset(df: pd.DataFrame, filters: dict):
