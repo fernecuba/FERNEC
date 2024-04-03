@@ -30,6 +30,6 @@ and install requirements
 
 `$ pip install -r requirements.txt`
 
-Finally, configure `configs.py` anrun 
+Finally, configure `configs.py` and run 
 
 `python3 main.py`
