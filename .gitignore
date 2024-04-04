@@ -1,1 +1,6 @@
+# ignore IDE files
 .idea/
+
+# ignore python specific files
+**/__pycache__/
+*.pyc
