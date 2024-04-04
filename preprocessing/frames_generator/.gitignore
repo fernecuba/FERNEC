@@ -1,0 +1,5 @@
+venv/
+data/
+
+# local configs file
+configs.py

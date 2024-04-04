@@ -1,3 +1,4 @@
+# ignore IDE files
 .idea/
 
 # ignore python specific files
@@ -6,3 +7,4 @@
 
 # ignore venvs
 **/venv/
+
