@@ -4,3 +4,7 @@
 # ignore python specific files
 **/__pycache__/
 *.pyc
+
+# ignore venvs
+**/venv/
+
