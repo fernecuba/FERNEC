@@ -4,9 +4,9 @@ import { SVGProps } from "react";
 function NavBar() {
   return (
     <header className="px-8 lg:px-16 h-14 flex items-center">
-      <Link className="flex items-center justify-center gap-x-4" href="#">
+      <Link className="flex items-center justify-center gap-x-4" href="/">
         <ScanFaceIcon className="h-6 w-6" />
-        <h1 className="text-2xl font-bold">Face Emotion Recognition</h1>
+        <h1 className="text-2xl font-bold">FERNEC</h1>
       </Link>
       <nav className="ml-auto flex gap-4 sm:gap-6">
         <Link

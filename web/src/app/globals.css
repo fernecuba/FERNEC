@@ -71,6 +71,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground bg-[url('/bg_home.jpg')] bg-local bg-center bg-cover;
   }
 }
