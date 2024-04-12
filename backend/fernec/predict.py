@@ -1,5 +1,6 @@
-from fernec_api.models import ImageItem, ImagePrediction
+from fernec.models import ImageItem, ImagePrediction
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 from PIL import Image
 import io
 import base64
@@ -9,11 +10,11 @@ import numpy as np
 
 router = APIRouter(prefix="/predict")
 
-# Need to load model
+# Needed to load model
 serialization_lib.enable_unsafe_deserialization()
 # Load model
 # TO DO: move path to env variable
-model = load_model("./fernec_api/ia_models/cotatest.keras")
+model = load_model("./fernec/ia_models/cotatest.keras")
 
 @router.post('/image')
 async def predict_image(image_item: ImageItem) -> ImagePrediction:
@@ -33,9 +34,9 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
         predictions = model.predict(image).tolist()[0]
         prediction_class = np.argmax(predictions)
         emociones = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
-        return {
+        return JSONResponse(status_code=200, content={
             "predictions": predictions,
             "emotion": emociones[prediction_class]
-        }
+        })
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
