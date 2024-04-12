@@ -73,7 +73,7 @@ export default function UploadVideo({
           />
           <label
             htmlFor="pickImage"
-            className="border-2 border-dashed border-gray-200/40 rounded-lg w-full flex items-center justify-center h-48 bg-red-200 relative overflow-hidden"
+            className="border-2 border-dashed border-gray-200/40 rounded-lg w-full flex items-center justify-center h-48 relative overflow-hidden"
           >
             {submitFile ? (
               <Image
