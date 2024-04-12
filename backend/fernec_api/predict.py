@@ -17,7 +17,6 @@ model = load_model("./fernec_api/ia_models/cotatest.keras")
 @router.post('/image')
 async def predict_image(image_item: ImageItem) -> ImagePrediction:
     try:
-        print('HERERE')
         # Decodificar la imagen Base64
         image_data = base64.b64decode(image_item.image_base64)
         # Convertir los datos de la imagen en un objeto de imagen
@@ -27,14 +26,12 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
         image = np.array(image) / 255.0  # Normaliza los valores de píxeles
         image = np.expand_dims(image, axis=0)  # Agrega una dimensión de lote
 
+        # TO DO: cut face from image
+        
         # Realizar la predicción utilizando el modelo cargado
         predictions = model.predict(image).tolist()[0]
         prediction_class = np.argmax(predictions)
         emociones = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
-        print({
-            "predictions": predictions,
-            "emotion": emociones[prediction_class]
-        })
         return {
             "predictions": predictions,
             "emotion": emociones[prediction_class]

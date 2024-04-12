@@ -9,15 +9,6 @@ export default function EmotionResults() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-9 rounded-lg overflow-hidden">
-            <img
-              alt="Video thumbnail"
-              className="aspect-video object-cover rounded-lg"
-              height={18}
-              src="/placeholder.svg"
-              width={32}
-            />
-          </div>
           <ul className="grid gap-1">
             <li>Happy</li>
             <li>Sad</li>
