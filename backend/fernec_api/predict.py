@@ -24,7 +24,7 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
         image = Image.open(io.BytesIO(image_data))
         # Preprocesar la imagen para que coincida con el formato esperado por el modelo
         image = image.resize((224, 224))  # Ajustar tam
-        image = np.array(image) / 255.0  # Normaliza los valores de píxeles
+
         image = np.expand_dims(image, axis=0)  # Agrega una dimensión de lote
 
         # TO DO: cut face from image

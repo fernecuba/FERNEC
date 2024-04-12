@@ -73,15 +73,14 @@ export default function UploadVideo({
           />
           <label
             htmlFor="pickImage"
-            className="border-2 border-dashed border-gray-200/40 rounded-lg w-full p-6 flex items-center justify-center"
+            className="border-2 border-dashed border-gray-200/40 rounded-lg w-full flex items-center justify-center h-48 bg-red-200 relative overflow-hidden"
           >
             {submitFile ? (
               <Image
                 alt="bluerabbit ia studio logo"
-                className="h-24 w-24 rounded-full"
+                className="flex flex-1 object-cover"
                 src={URL.createObjectURL(submitFile)}
-                width={100}
-                height={100}
+                fill={true}
               />
             ) : (
               <svg
