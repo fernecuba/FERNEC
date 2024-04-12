@@ -11,7 +11,11 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Image from "next/image";
 
-export default function Component() {
+export default function UploadVideo({
+  setEmotionResult,
+}: {
+  setEmotionResult: (emotion: string) => void;
+}) {
   const [submitFile, setSubmitFile] = useState<File>();
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -35,8 +39,11 @@ export default function Component() {
         },
       });
       if (response.ok) {
-        const result = await response.json();
-        alert("OKKKK:" + result.emotion);
+        const result = (await response.json()) as {
+          emotion: string;
+          predictions: number[];
+        };
+        setEmotionResult(result.emotion);
       } else {
         alert(`Failed ${await response.text()}`);
       }

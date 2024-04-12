@@ -12,6 +12,7 @@ router = APIRouter(prefix="/predict")
 # Need to load model
 serialization_lib.enable_unsafe_deserialization()
 # Load model
+# TO DO: move path to env variable
 model = load_model("./fernec_api/ia_models/cotatest.keras")
 
 @router.post('/image')
@@ -27,7 +28,7 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
         image = np.expand_dims(image, axis=0)  # Agrega una dimensión de lote
 
         # TO DO: cut face from image
-        
+
         # Realizar la predicción utilizando el modelo cargado
         predictions = model.predict(image).tolist()[0]
         prediction_class = np.argmax(predictions)
