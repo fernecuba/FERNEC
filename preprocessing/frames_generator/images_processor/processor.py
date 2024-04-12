@@ -54,7 +54,7 @@ def process_dataframe(df_split: pd.DataFrame, i: int, config: dict):
     df_split.drop(columns=["boxes", "frame"], inplace=True)
     set_header = (i == 0)
     df_split.to_csv(config["output_path"] + config["temp_path"] + f"{config['dataset']}_{i}.csv",
-                    sep=',', encoding='utf-8', headers=set_header, index=False)
+                    sep=',', encoding='utf-8', header=set_header, index=False)
 
     if config["verbose"]:
         elapsed_time = time.time() - start
