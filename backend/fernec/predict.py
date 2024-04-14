@@ -1,3 +1,4 @@
+import os
 from fernec.models import ImageItem, ImagePrediction
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
@@ -13,8 +14,8 @@ router = APIRouter(prefix="/predict")
 # Needed to load model
 serialization_lib.enable_unsafe_deserialization()
 # Load model
-# TO DO: move path to env variable
-model = load_model("./fernec/ia_models/cotatest.keras")
+model_path = os.getenv('MODEL_PATH', './fernec/ia_models/cotatest.keras')
+model = load_model(model_path)
 
 @router.post('/image')
 async def predict_image(image_item: ImageItem) -> ImagePrediction:
