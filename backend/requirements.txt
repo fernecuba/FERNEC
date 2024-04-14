@@ -7,3 +7,6 @@ keras==2.15.0
 tensorflow==2.15.0.post1
 tensorflow-estimator==2.15.0
 tensorflow-io-gcs-filesystem==0.36.0
+pandas==2.2.2
+opencv-python==4.9.0.80
+facenet-pytorch==2.5.3
