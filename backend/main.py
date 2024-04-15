@@ -1,21 +1,19 @@
-from item import Item
-
-from typing import Union
+import uvicorn
 from fastapi import FastAPI
+from fernec.predict import router as predict_router
+from manage.get_state import router as state_router
 
-app = FastAPI()
+def get_application() -> FastAPI:
+    application = FastAPI(title='FERNEC API')
 
-
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+    #Add routers
+    application.include_router(predict_router)
+    application.include_router(state_router)
+    return application
 
 
-@app.put("/items/{item_id}")
-async def update_item(item_id: int, item: Item):
-    return {"item_name": item.name, "item_id": item_id}
+app = get_application()
+
+if __name__ == "__main__":
+    print('Starting FERNEC backend') # TO DO: Set a logger
+    uvicorn.run(app)

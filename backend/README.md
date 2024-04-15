@@ -1,13 +1,19 @@
-# backend for FERNEC
+# Backend for FERNEC
 PoC based on the [FastAPI documentation](https://fastapi.tiangolo.com/tutorial/)
 
-To install requirements
+## To install requirements
 
-`$ pip install -r requirements.txt`
+`pip install -r requirements.txt`
 
-To run the server
+## Setting Up
 
-`uvicorn main:app --reload`
+Before running the `predict.py` script, you need to set the `MODEL_PATH` environment variable to the path of your model file.
+
+```export MODEL_PATH="/path/to/your/model/file"```
+
+## To run the server
+
+`python main.py`
 
 You can check it is running at [localhost 8000](http://127.0.0.1:8000)
 
