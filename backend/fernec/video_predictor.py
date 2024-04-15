@@ -215,3 +215,18 @@ def predict_video(video_path, model_name):
     prediction = model_imported.predict(frames_to_predict)
 
     return prediction
+
+def print_prediction(prediction):
+    class_vocab = [
+    "Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise", "Other"
+    ]
+    print(class_vocab)
+    results = []
+    for i, result in enumerate(prediction):
+        result_argmax = result.argmax()
+        result_label = class_vocab[result_argmax]
+    
+        # print(f"  {class_vocab[i]}: {probabilities[i] * 100:5.2f}%")
+        results.append(f"frame {i} - result {result_label}")
+    
+    return results

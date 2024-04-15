@@ -1,5 +1,5 @@
 import os
-from fernec.models import ImageItem, ImagePrediction
+from fernec.models import ImageItem, ImagePrediction, VideoItem, VideoPrediction
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from PIL import Image
@@ -8,6 +8,7 @@ import base64
 from tensorflow.keras.models import load_model
 from keras.src.saving import serialization_lib
 import numpy as np
+from fernec.video_predictor import predict_video, print_prediction
 
 router = APIRouter(prefix="/predict")
 
@@ -39,5 +40,17 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
             "predictions": predictions,
             "emotion": emociones[prediction_class]
         })
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@router.post('/video')
+async def predict_video_endpoint(video_item: VideoItem) -> VideoPrediction:
+    try:
+        prediction = predict_video(video_item.video_path, video_item.model_name)
+
+        return JSONResponse(status_code=200, content={
+            "prediction": print_prediction(prediction)
+        })
+        
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
