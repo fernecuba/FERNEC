@@ -45,9 +45,22 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
         raise HTTPException(status_code=400, detail=str(e))
     
 @router.post('/video')
-async def predict_video_endpoint(video_item: VideoItem) -> VideoPrediction:
+async def predict_video_endpoint(request: Request) -> VideoPrediction:
     try:
-        prediction = predict_video(video_item.video_path, video_item.model_name)
+        # Verify there is a file in the request
+        form_data = await request.form()
+        if "video_file" not in form_data:
+            return JSONResponse(content={"message": "Couldn't find video file"}, status_code=400)
+
+        video_file = form_data["video_file"]
+
+        contents = await video_file.read()
+
+        # Save the video file temporarily
+        with open("temp_video.mp4", "wb") as temp_video:
+            temp_video.write(contents)
+
+        prediction = predict_video("temp_video.mp4", "model4_rnn_poc3")
 
         return JSONResponse(status_code=200, content={
             "prediction": print_prediction(prediction)
