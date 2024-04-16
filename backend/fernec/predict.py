@@ -59,7 +59,7 @@ async def predict_video_endpoint(request: Request) -> VideoPrediction:
         with open("temp_video.mp4", "wb") as temp_video:
             temp_video.write(contents)
 
-        prediction = predict_video("temp_video.mp4", "model4_rnn_poc3")
+        prediction = predict_video("temp_video.mp4", "model4_rnn_poc3.keras")
 
         return JSONResponse(status_code=200, content={
             "prediction": print_prediction(prediction)

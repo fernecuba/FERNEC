@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from facenet_pytorch import MTCNN as facenet_MTCNN
 from PIL import Image, ImageDraw
-from keras.models import model_from_json
+from keras.models import load_model
 
 DATASETS_PATH = "/home/eche/Documents/TPP/notebooks/Datasets/"
 AFF_WILD2_PATH = DATASETS_PATH + "Aff-Wild2/"
@@ -205,11 +205,14 @@ def predict_video(video_path, model_name):
     
     frames_to_predict = get_frames_to_predict()
 
-    with open(MODELS_PATH + model_name + '.json','r') as f:
-        json = f.read()
-    model_imported = model_from_json(json)
+    # with open(MODELS_PATH + model_name + '.json','r') as f:
+    #     json = f.read()
+    # model_imported = model_from_json(json)
     
-    model_imported.load_weights(MODELS_PATH + model_name + '.h5')
+    # model_imported.load_weights(MODELS_PATH + model_name + '.h5')
+
+    model_imported = load_model(MODELS_PATH + model_name)
+
     print("Loaded model from disk")
 
     prediction = model_imported.predict(frames_to_predict)
