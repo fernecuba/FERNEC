@@ -3,7 +3,7 @@ import cv2
 import pandas as pd
 import numpy as np
 from facenet_pytorch import MTCNN as facenet_MTCNN
-from PIL import Image, ImageDraw
+from PIL import Image
 from keras.models import load_model
 
 DATASETS_PATH = "/home/eche/Documents/TPP/notebooks/Datasets/"
