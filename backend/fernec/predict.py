@@ -66,4 +66,4 @@ async def predict_video_endpoint(request: Request) -> VideoPrediction:
         })
         
     except Exception as e:
-        raise HTTPException(status_code=00, detail=str(e))    
+        raise HTTPException(status_code=500, detail=str(e))    
