@@ -15,8 +15,8 @@ router = APIRouter(prefix="/predict")
 # Needed to load model
 serialization_lib.enable_unsafe_deserialization()
 # Load model
-model_path = os.getenv('MODEL_PATH', './fernec/ia_models/cotatest.keras')
-model = load_model(model_path)
+model_cnn_path = os.getenv('MODEL_CNN_PATH', './fernec/ia_models/cotatest.keras')
+model = load_model(model_cnn_path)
 
 @router.post('/image')
 async def predict_image(image_item: ImageItem) -> ImagePrediction:

@@ -7,9 +7,10 @@ PoC based on the [FastAPI documentation](https://fastapi.tiangolo.com/tutorial/)
 
 ## Setting Up
 
-Before running the `predict.py` script, you need to set the `MODEL_PATH` environment variable to the path of your model file.
+Before running the `predict.py` script, you need to set the `MODEL_CNN_PATH` and `MODEL_RNN_PATH` environment variables to the path of your model file.
 
-```export MODEL_PATH="/path/to/your/model/file"```
+```export MODEL_CNN_PATH="/path/to/your/cnn_model/file"```
+```export MODEL_RNN_PATH="/path/to/your/rnn_model/file"```
 
 ## To run the server
 
