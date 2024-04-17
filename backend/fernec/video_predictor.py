@@ -13,7 +13,7 @@ AFF_WILD2_LABELS_PATH = AFF_WILD2_PATH + "Annotations/EXPR_Classification_Challe
 AFF_WILD2_VIDEOS_PATH = AFF_WILD2_PATH + "raw-videos/"
 
 # Temp path to save the frames extracted from the video
-AFF_WILD2_TMP_FRAMES_PATH = AFF_WILD2_PATH + "Temp/"
+TMP_FRAMES_PATH = "./temp/"
 # In this path we will save the frames that are ready to be predicted
 AFF_WILD2_TMP_FRAMES_READY_PATH = AFF_WILD2_PATH + "TempReady/"
 
@@ -47,16 +47,16 @@ def split_video_into_frames(video_path, target_fps=12):
     frame_interval = int(frame_rate / target_fps)  # Intervalo para mantener la tasa de fotogramas deseada
     
     # Create output folder if it doesn't exist
-    if not os.path.exists(AFF_WILD2_TMP_FRAMES_PATH):
-        os.makedirs(AFF_WILD2_TMP_FRAMES_PATH)
+    if not os.path.exists(TMP_FRAMES_PATH):
+        os.makedirs(TMP_FRAMES_PATH)
 
-    clean_folder(AFF_WILD2_TMP_FRAMES_PATH)
+    clean_folder(TMP_FRAMES_PATH)
     
     # Extract the frames
     while success:
         # Save frame in the output folder
         if count % frame_interval == 0:  # Only save frames at the desired rate
-            frame_path = os.path.join(AFF_WILD2_TMP_FRAMES_PATH, f"frame_{count}.jpg")
+            frame_path = os.path.join(TMP_FRAMES_PATH, f"frame_{count}.jpg")
             cv2.imwrite(frame_path, image)  # Save frame as JPG file
         success, image = vidcap.read()  # Read next frame
         count += 1
@@ -201,7 +201,7 @@ def get_frames_to_predict():
 def predict_video(video_path, model_path):
     split_video_into_frames(video_path)
     
-    process_frames(AFF_WILD2_TMP_FRAMES_PATH)
+    process_frames(TMP_FRAMES_PATH)
     
     frames_to_predict = get_frames_to_predict()
 
