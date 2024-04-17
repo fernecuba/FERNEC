@@ -13,9 +13,9 @@ AFF_WILD2_LABELS_PATH = AFF_WILD2_PATH + "Annotations/EXPR_Classification_Challe
 AFF_WILD2_VIDEOS_PATH = AFF_WILD2_PATH + "raw-videos/"
 
 # Temp path to save the frames extracted from the video
-TMP_FRAMES_PATH = "./temp/"
+TMP_FRAMES_PATH = "./temp/frames/"
 # In this path we will save the frames that are ready to be predicted
-AFF_WILD2_TMP_FRAMES_READY_PATH = AFF_WILD2_PATH + "TempReady/"
+TMP_FRAMES_READY_PATH = "temp/frames_ready/"
 
 MODELS_PATH = "/home/eche/Documents/TPP/notebooks/Modelos/"
 
@@ -64,6 +64,7 @@ def split_video_into_frames(video_path, target_fps=12):
     # Close the video
     vidcap.release()
 
+# This function was used for the old face detector
 def get_points(box):
     '''
         Args:
@@ -80,7 +81,7 @@ def get_boxes_from_face_detection(face_detection):
     boxes = []
     for face in face_detection:
         if face is not None and len(face) != 0:
-            boxes.append(get_points(face[0]))
+            boxes.append(face[0])
         else:
             boxes.append(face)
     return boxes
@@ -111,13 +112,13 @@ def generate_image_pixels(frame, box, output_folder, verbose=False):
         else:
             print("No box detected for cropping")
 
-def process_frames(frames_path, batch_size=20):
+def process_frames(frames_path, frames_ready_path, batch_size=20):
     detector = facenet_MTCNN()
 
-    if not os.path.exists(AFF_WILD2_TMP_FRAMES_READY_PATH):
-        os.makedirs(AFF_WILD2_TMP_FRAMES_READY_PATH)
+    if not os.path.exists(frames_ready_path):
+        os.makedirs(frames_ready_path)
 
-    clean_folder(AFF_WILD2_TMP_FRAMES_READY_PATH)
+    clean_folder(frames_ready_path)
     
     image_files = [f for f in os.listdir(frames_path) if f.endswith(('.jpg', '.png'))]
 
@@ -138,7 +139,7 @@ def process_frames(frames_path, batch_size=20):
     
         # Procesar cada fotograma del lote
         for j, (frame, box) in enumerate(zip(raw_frames, boxes)):
-            generate_image_pixels(frame, box, AFF_WILD2_TMP_FRAMES_READY_PATH)
+            generate_image_pixels(frame, box, frames_ready_path)
     
     print("Procesamiento completado.")
 
@@ -180,14 +181,14 @@ def prepare_data(data, height, width, channels):
 
 def get_frames_to_predict():
     
-    files = os.listdir(AFF_WILD2_TMP_FRAMES_READY_PATH)
+    files = os.listdir(TMP_FRAMES_READY_PATH)
     df = pd.DataFrame({
         "file_name": files
     })
 
     pixels_list = []
     for index, row in df.iterrows():
-        pixels_list.append(get_pixels(AFF_WILD2_TMP_FRAMES_READY_PATH + f"{row['file_name']}"))
+        pixels_list.append(get_pixels(TMP_FRAMES_READY_PATH + f"{row['file_name']}"))
     
     # Asignamos la lista de píxeles a la columna 'pixels'
     df["pixels"] = pixels_list    
@@ -201,7 +202,7 @@ def get_frames_to_predict():
 def predict_video(video_path, model_path):
     split_video_into_frames(video_path)
     
-    process_frames(TMP_FRAMES_PATH)
+    process_frames(TMP_FRAMES_PATH, TMP_FRAMES_READY_PATH)
     
     frames_to_predict = get_frames_to_predict()
 
