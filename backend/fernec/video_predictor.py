@@ -6,24 +6,16 @@ from facenet_pytorch import MTCNN as facenet_MTCNN
 from PIL import Image
 from keras.models import load_model
 
-DATASETS_PATH = "/home/eche/Documents/TPP/notebooks/Datasets/"
-AFF_WILD2_PATH = DATASETS_PATH + "Aff-Wild2/"
-AFF_WILD2_FRAMES_PATH = AFF_WILD2_PATH + "frames/48x48x1/"
-AFF_WILD2_LABELS_PATH = AFF_WILD2_PATH + "Annotations/EXPR_Classification_Challenge/"
-AFF_WILD2_VIDEOS_PATH = AFF_WILD2_PATH + "raw-videos/"
-
 # Temp path to save the frames extracted from the video
 TMP_FRAMES_PATH = "./temp/frames/"
 # In this path we will save the frames that are ready to be predicted
 TMP_FRAMES_READY_PATH = "temp/frames_ready/"
 
-MODELS_PATH = "/home/eche/Documents/TPP/notebooks/Modelos/"
-
 HEIGHT = 48
 WIDTH = 48
+CHANNELS = 1
 HEIGHT_POSITION = 2
 WIDTH_POSITION = 3
-CHANNELS = 1
 Y = 0
 X = 1
 
@@ -99,7 +91,8 @@ def generate_image_pixels(frame, box, output_folder, verbose=False):
     if box is not None:
         # get boxes
         if len(box) != 0:
-            print(f"There is a box to crop: {box}")
+            if verbose:
+                print(f"There is a box to crop: {box}")
             # Crop image to keep only the face
             cropped_image = crop_image(image, box, verbose)
             # Resize the cropped image to 48x48
@@ -179,16 +172,16 @@ def prepare_data(data, height, width, channels):
 
     return image_array
 
-def get_frames_to_predict():
+def get_frames_to_predict(frames_ready_path):
     
-    files = os.listdir(TMP_FRAMES_READY_PATH)
+    files = os.listdir(frames_ready_path)
     df = pd.DataFrame({
         "file_name": files
     })
 
     pixels_list = []
     for index, row in df.iterrows():
-        pixels_list.append(get_pixels(TMP_FRAMES_READY_PATH + f"{row['file_name']}"))
+        pixels_list.append(get_pixels(frames_ready_path + f"{row['file_name']}"))
     
     # Asignamos la lista de píxeles a la columna 'pixels'
     df["pixels"] = pixels_list    
@@ -204,7 +197,7 @@ def predict_video(video_path, model_path):
     
     process_frames(TMP_FRAMES_PATH, TMP_FRAMES_READY_PATH)
     
-    frames_to_predict = get_frames_to_predict()
+    frames_to_predict = get_frames_to_predict(TMP_FRAMES_READY_PATH)
 
     model_imported = load_model(model_path)
 
@@ -224,7 +217,6 @@ def print_prediction(prediction):
         result_argmax = result.argmax()
         result_label = class_vocab[result_argmax]
     
-        # print(f"  {class_vocab[i]}: {probabilities[i] * 100:5.2f}%")
         results.append(f"frame {i} - result {result_label}")
     
     return results
