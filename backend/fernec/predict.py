@@ -16,6 +16,7 @@ router = APIRouter(prefix="/predict")
 serialization_lib.enable_unsafe_deserialization()
 # Load model
 model_cnn_path = os.getenv('MODEL_CNN_PATH', './fernec/ia_models/cotatest.keras')
+model_rnn_path = os.getenv('MODEL_RNN_PATH', '/home/eche/Documents/TPP/notebooks/Modelos/model4_rnn_poc3.keras')
 model = load_model(model_cnn_path)
 
 @router.post('/image')
@@ -56,10 +57,11 @@ async def predict_video_endpoint(request: Request) -> VideoPrediction:
         contents = await video_file.read()
 
         # Save the video file temporarily
-        with open("temp_video.mp4", "wb") as temp_video:
+        temp_video_path = "temp_video.mp4"
+        with open(temp_video_path, "wb") as temp_video:
             temp_video.write(contents)
 
-        prediction = predict_video("temp_video.mp4", "model4_rnn_poc3.keras")
+        prediction = predict_video(temp_video_path, model_rnn_path)
 
         return JSONResponse(status_code=200, content={
             "prediction": print_prediction(prediction)

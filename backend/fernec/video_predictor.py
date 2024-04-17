@@ -198,22 +198,16 @@ def get_frames_to_predict():
 
     return images
 
-def predict_video(video_path, model_name):
+def predict_video(video_path, model_path):
     split_video_into_frames(video_path)
     
     process_frames(AFF_WILD2_TMP_FRAMES_PATH)
     
     frames_to_predict = get_frames_to_predict()
 
-    # with open(MODELS_PATH + model_name + '.json','r') as f:
-    #     json = f.read()
-    # model_imported = model_from_json(json)
-    
-    # model_imported.load_weights(MODELS_PATH + model_name + '.h5')
+    model_imported = load_model(model_path)
 
-    model_imported = load_model(MODELS_PATH + model_name)
-
-    print("Loaded model from disk")
+    print("Loaded model from path " + model_path)
 
     prediction = model_imported.predict(frames_to_predict)
 
