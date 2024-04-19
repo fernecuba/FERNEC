@@ -1,5 +1,9 @@
 # frames_generator
 
+## input files
+For video processing, input files must contain these columns
+ - fdshf
+
 ## configs
 
 - `dataset`: unique name for dataset
@@ -10,7 +14,7 @@
 - `temp_path`: relative path to store temp files inside `output_path` (TODO: these are not being deleted, however are useless by the end of the process)
 - `array_split`: number of arrays in which to split dataframe to process (TODO: default should be one)
 - `thumbnail_size`: tuple of size 2 with dimensions to be resized (TODO: default should be `None`)
-- `frames_batch_size`: batch size used to detect faces in frames using facenet_pytorch's MTCNN implementation
+- `batch_size`: batch size used to detect faces in frames using facenet_pytorch's MTCNN implementation
 - `frames_order_magnitude`: order magnitude used to name frames produced in video processing
 - `dataset_sort`: array of columns used to sort dataset
 - `verbose`: verbose mode

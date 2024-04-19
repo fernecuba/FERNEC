@@ -1,5 +1,6 @@
 # copy this file as configs.py and define paths as you wish. This is just an example
 
+# TODO: improve me with new changes
 # TODO consider using https://docs.python.org/3/library/configparser.html
 def get_configs():
     return [
@@ -27,7 +28,7 @@ def get_configs():
             # necessary to create one file with all image labels from each video labels
             "images_labels_path": "./data/Aff-Wild2/labels/",
             "temp_path": "temp/",
-            "frames_batch_size": 30,
+            "batch_size": 30,
             # to fill name when creating frames files
             "frames_order_magnitude": 5,
             "thumbnail_size": (48, 48),
