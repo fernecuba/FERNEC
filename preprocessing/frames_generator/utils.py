@@ -2,6 +2,15 @@ import os
 import pandas as pd
 
 
+class Configurable:
+    def __init__(self, config: dict):
+        for key in config:
+            setattr(self, key, config[key])
+
+    def get(self, attribute):
+        return self.__getattribute__(attribute)
+
+
 def create_folder_if_not_exists(path):
     if not os.path.exists(path):
         os.makedirs(path)

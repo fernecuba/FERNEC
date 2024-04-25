@@ -1,14 +1,7 @@
 from pymongo import MongoClient
 from pymongo.results import InsertManyResult
 
-
-class Configurable:
-    def __init__(self, config: dict):
-        for key in config:
-            setattr(self, key, config[key])
-
-    def get(self, attribute):
-        return self.__getattribute__(attribute)
+from preprocessing.frames_generator.utils import Configurable
 
 
 class MongoDBManager(Configurable):
@@ -36,4 +29,4 @@ class MongoDBManager(Configurable):
     @staticmethod
     def delete_partial_uploads(collection, processed_groups):
         delete_result = collection.delete_many({"video_name": {"$nin": processed_groups}})
-        print("Número de documentos eliminados:", delete_result.deleted_count)
+        print("Documents erased: ", delete_result.deleted_count)

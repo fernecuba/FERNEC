@@ -1,6 +1,6 @@
 import pandas as pd
 from images_processor.processor import process_images
-from videos_processor.processor import process_videos
+from videos_processor.processor import VideosProcessor
 
 
 def run_strategy(config):
@@ -14,7 +14,7 @@ def run_strategy(config):
     elif config["source"] == "videos":
         if config["verbose"]:
             print(f"Strategy videos: about to process {df.shape} dataframe")
-        process_videos(df, config)
+        VideosProcessor(config).process(df)
 
     else:
         raise NotImplementedError(f"Source {config['source']} not implemented")
