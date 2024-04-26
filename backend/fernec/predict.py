@@ -1,13 +1,13 @@
 import os
-from fernec.models import ImageItem, ImagePrediction, VideoPrediction
-from fastapi import APIRouter, Request, HTTPException
-from fastapi.responses import JSONResponse
-from PIL import Image
-import io
 import base64
+import io
+import numpy as np
+from PIL import Image
 from tensorflow.keras.models import load_model
 from keras.src.saving import serialization_lib
-import numpy as np
+from fastapi import APIRouter, Request, HTTPException
+from fastapi.responses import JSONResponse
+from fernec.models import ImageItem, ImagePrediction, VideoPrediction
 from fernec.video_predictor import predict_video, print_prediction
 
 router = APIRouter(prefix="/predict")
