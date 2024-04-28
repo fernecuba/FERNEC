@@ -1,5 +1,5 @@
 from configs import get_configs
-from strategy import run_strategy
+from preprocessing.frames_generator.strategy.strategy import run_strategy
 
 
 def main():

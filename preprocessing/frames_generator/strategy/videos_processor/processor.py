@@ -3,10 +3,10 @@ import gc
 import time
 import pandas as pd
 
-from preprocessing.frames_generator.base_processor import BaseProcessor
+from preprocessing.frames_generator.strategy.base_processor import BaseProcessor
 from preprocessing.frames_generator.database_manager.mongodb_manager import MongoDBManager
-from preprocessing.frames_generator.videos_processor.videos import get_frames_from_video
-from preprocessing.frames_generator.utils import Configurable, create_folder_if_not_exists, apply_filters_to_dataset
+from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
+from preprocessing.frames_generator.utils import Configurable, create_folder_if_not_exists
 
 
 class VideosProcessor(BaseProcessor, Configurable):
@@ -20,7 +20,7 @@ class VideosProcessor(BaseProcessor, Configurable):
         """
         self.save_frames_from_videos(df)
         labels_df = self.create_labels_file(df)
-        labels_df = apply_filters_to_dataset(labels_df, self.get("dataset_filters"))
+        labels_df = self.apply_filters_to_dataset(labels_df, self.get("dataset_filters"))
 
         if self.get("load_csv"):
             self.load_into_csv(labels_df)

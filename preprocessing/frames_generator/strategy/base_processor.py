@@ -7,7 +7,7 @@ import pandas as pd
 
 from tqdm import tqdm
 
-from preprocessing.frames_generator.images_processor.images import open_image
+from preprocessing.frames_generator.strategy.images_processor.images import open_image
 from preprocessing.frames_generator.utils import Configurable, chunks_generator
 
 
@@ -25,7 +25,7 @@ class BaseProcessor(Configurable):
             rows = chunk_rows.to_dict(orient='records')
             shape = self.get("thumbnail_size") + (self.get("channels"),)
             chunk = [
-                self.get_row_with_image(r, self.get("dataset_output_path") + f"{r['video_name']}/{r['file_name']}",
+                self.get_row_with_image(r, self.get("dataset_output_path") + f"{r['file_name']}",
                                         shape)
                 for r in rows]
 
@@ -108,3 +108,9 @@ class BaseProcessor(Configurable):
             gc.collect()
 
         return counter
+
+    @staticmethod
+    def apply_filters_to_dataset(df: pd.DataFrame, filters: dict):
+        for column, valid_values in filters.items():
+            df = df.loc[df[column].isin(valid_values)]
+        return df
