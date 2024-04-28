@@ -6,3 +6,6 @@ class ImageItem(BaseModel):
 class ImagePrediction(BaseModel):
     predictions: list[float]
     emotion: str
+
+class VideoPrediction(BaseModel):
+    prediction: list[str]
