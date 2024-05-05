@@ -6,5 +6,4 @@
 *.pyc
 
 # ignore venvs
-**/venv/
-
+**/*venv*/
