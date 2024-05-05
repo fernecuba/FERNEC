@@ -4,7 +4,7 @@ from videos_processor.processor import VideosProcessor
 from images_processor.processor import ImagesProcessor
 
 
-def run_strategy(config):
+def run(config):
     processor = get_strategy(config)
 
     df = pd.read_csv(config["labels_path"], sep=",", encoding="utf-8")
