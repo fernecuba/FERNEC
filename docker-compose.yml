@@ -6,12 +6,22 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-#    volumes:
-#      - ./api:/go/src/external-portals-api/api
     environment:
       PORT: 8000
     ports:
       - "8000:8000"
+    networks:
+      - fernet
+
+  frontend:
+    container_name: frontend-fernec
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    environment:
+      PORT: 3000
+    ports:
+      - "3000:3000"
     networks:
       - fernet
 
