@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  backend:
+    container_name: backend-fernec
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+#    volumes:
+#      - ./api:/go/src/external-portals-api/api
+    environment:
+      PORT: 8000
+    ports:
+      - "8000:8000"
+    networks:
+      - fernet
+
+networks:
+  fernet:
+    external: true
+    name: fernet
