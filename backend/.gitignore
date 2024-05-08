@@ -1,2 +1,8 @@
 #ignore models
 fernec/ia_models/
+
+#ignore videos
+*.mp4
+
+#ignore temp folder
+temp/
