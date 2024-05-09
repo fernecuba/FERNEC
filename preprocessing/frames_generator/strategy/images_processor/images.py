@@ -6,7 +6,7 @@ from PIL import Image
 
 def open_image(file_path, shape):
     image = Image.open(file_path)
-    if len(shape) >= 3 and shape[2] == 1:
+    if should_convert_to_grayscale(shape):
         image = image.convert('L')
 
     return np.reshape(np.array(list(image.getdata())).flatten(), shape).tolist()
@@ -18,6 +18,10 @@ def save_image(image, output_file_path):
     except Exception as e:
         print(f"exception {e} with tuple {image}")
         raise e
+
+
+def should_convert_to_grayscale(shape):
+    return len(shape) >= 3 and shape[2] == 1
 
 
 def crop_image(image, bounding_box, verbose=False):
