@@ -27,5 +27,4 @@ services:
 
 networks:
   fernet:
-    external: true
     name: fernet
