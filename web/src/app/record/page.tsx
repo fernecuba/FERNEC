@@ -1,10 +1,10 @@
 "use client";
 import { useRecordWebcam } from "react-record-webcam";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Trash2, FileUp } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const RecordingPulse = ({ className }: { className?: string }) => (
   <span className={cn("relative flex h-4 w-4", className)}>
@@ -24,6 +24,7 @@ export default function Record() {
     activeRecordings,
     clearPreview,
   } = useRecordWebcam();
+  const { toast } = useToast();
   const [isHovered, setIsHovered] = useState(false);
 
   const initCamera = async () => {
@@ -64,7 +65,10 @@ export default function Record() {
       method: "POST",
       body: formData,
     });
-    alert(`Response: ${response.ok}`);
+    toast({
+      description: response.ok ? "File upload" : "Error uploading file",
+      variant: response.ok ? "default" : "destructive",
+    });
   };
 
   const recording = activeRecordings.at(-1);
