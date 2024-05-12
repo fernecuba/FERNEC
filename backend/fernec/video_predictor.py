@@ -11,9 +11,9 @@ TMP_FRAMES_PATH = "./temp/frames/"
 # In this path we will save the frames that are ready to be predicted
 TMP_FRAMES_READY_PATH = "temp/frames_ready/"
 
-HEIGHT = 48
-WIDTH = 48
-CHANNELS = 1
+HEIGHT = 112
+WIDTH = 112
+CHANNELS = 3
 HEIGHT_POSITION = 2
 WIDTH_POSITION = 3
 Y = 0
@@ -86,7 +86,10 @@ def crop_image(image, bounding_box, verbose=False):
 
 def generate_image_pixels(frame, box, output_folder, verbose=False):
     # frame to image
-    image = Image.fromarray(frame).convert('L')
+    image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    
+    if CHANNELS == 1:
+        image = image.convert('L') 
 
     if box is not None:
         # get boxes
@@ -105,7 +108,10 @@ def generate_image_pixels(frame, box, output_folder, verbose=False):
         else:
             print("No box detected for cropping")
 
-def process_frames(frames_path, frames_ready_path, batch_size=20):
+def custom_sort(file_name):
+    return int(file_name.split('_')[1].split('.')[0])
+
+def process_frames(frames_path, frames_ready_path, batch_size=20, verbose=False):
     detector = facenet_MTCNN()
 
     if not os.path.exists(frames_ready_path):
@@ -113,7 +119,12 @@ def process_frames(frames_path, frames_ready_path, batch_size=20):
 
     clean_folder(frames_ready_path)
     
-    image_files = [f for f in os.listdir(frames_path) if f.endswith(('.jpg', '.png'))]
+    image_files = sorted(os.listdir(frames_path), key=custom_sort)
+
+    if verbose:
+        print("Printing list of image files")
+        for element in image_files:
+            print(element)
 
     # Procesar por lotes
     for i in range(0, len(image_files), batch_size):
