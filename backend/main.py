@@ -19,7 +19,7 @@ app = get_application()
 # TODO: Set a logger
 if __name__ == "__main__":
     print('Starting FERNEC backend')
-    port = 80000
+    port = 8000
     if os.getenv("PORT"):
         port = int(os.getenv("PORT"))
     uvicorn.run(app, host='0.0.0.0', port=port)
