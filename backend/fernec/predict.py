@@ -61,7 +61,7 @@ async def predict_video_endpoint(request: Request) -> VideoPrediction:
         with open(temp_video_path, "wb") as temp_video:
             temp_video.write(contents)
 
-        prediction = predict_video(temp_video_path, model_rnn_path)
+        prediction = predict_video(temp_video_path, model_cnn_path, model_rnn_path)
 
         return JSONResponse(status_code=200, content={
             "prediction": print_prediction(prediction)

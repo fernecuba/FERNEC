@@ -1,10 +1,12 @@
 import os
 import cv2
+import shutil
+import math
 import pandas as pd
 import numpy as np
-from facenet_pytorch import MTCNN as facenet_MTCNN
 from PIL import Image
-from keras.models import load_model
+from facenet_pytorch import MTCNN as facenet_MTCNN
+from keras.models import Sequential, load_model
 
 # Temp path to save the frames extracted from the video
 TMP_FRAMES_PATH = "./temp/frames/"
@@ -18,6 +20,8 @@ HEIGHT_POSITION = 2
 WIDTH_POSITION = 3
 Y = 0
 X = 1
+MAX_SEQ_LENGTH = 40
+NUM_FEATURES = 1024
 
 def clean_folder(folder_path):
     if not os.path.isdir(folder_path):
@@ -99,7 +103,7 @@ def generate_image_pixels(frame, box, output_folder, verbose=False):
             # Crop image to keep only the face
             cropped_image = crop_image(image, box, verbose)
             # Resize the cropped image to 48x48
-            resized_image = cropped_image.resize((48, 48))
+            resized_image = cropped_image.resize((HEIGHT, WIDTH))
             # Save the resized image to the output folder
             output_path = os.path.join(output_folder, f"face_{len(os.listdir(output_folder))}.jpg")
             resized_image.save(output_path)
@@ -203,31 +207,95 @@ def get_frames_to_predict(frames_ready_path):
 
     return images
 
-def predict_video(video_path, model_path):
+def prepare_frames(start_index, model_cnn_path, verbose=False):
+    cnn_model = load_model(model_cnn_path)
+    
+    model = Sequential()
+    for layer in cnn_model.layers[:-1]: # go through until last layer
+        model.add(layer)
+
+    frames_features = np.zeros(shape=(MAX_SEQ_LENGTH, NUM_FEATURES), dtype="float32")
+    frames_mask = np.ones(shape=(MAX_SEQ_LENGTH))
+    idx = 0
+
+    #files = os.listdir(AFF_WILD2_TMP_FRAMES_READY_PATH)
+    #frames = files[:MAX_SEQ_LENGTH]
+
+    #frames = files
+    #total_frames = len(frames)
+    #sample_step = total_frames // MAX_SEQ_LENGTH
+
+    for i in range(0, MAX_SEQ_LENGTH):
+        frame_path = TMP_FRAMES_READY_PATH + f"face_{i + start_index}.jpg"
+
+        if verbose:
+            print("Leo: " + frame_path)
+
+        if os.path.isfile(frame_path):
+            
+            frame = cv2.imread(frame_path)
+            img = np.reshape(frame, (HEIGHT, WIDTH, CHANNELS))
+            img = np.expand_dims(img, axis=0)
+    
+            prediction = model.predict(img, verbose=0) # shape (1, num_features)
+            assert len(prediction[0]) == NUM_FEATURES, 'Error features'
+    
+            frames_features[idx] = prediction[0]
+            
+        else:
+            
+            if verbose:
+                print("File not found, filling mask")
+            frames_mask[idx] = 0
+            
+        idx += 1
+
+    frames_features = frames_features[None, ...]
+    frames_mask = frames_mask[None, ...]
+    
+
+    return [frames_features, frames_mask]
+
+
+def predict_video(video_path, model_cnn_path, model_rnn_path):
     split_video_into_frames(video_path)
     
     process_frames(TMP_FRAMES_PATH, TMP_FRAMES_READY_PATH)
     
     frames_to_predict = get_frames_to_predict(TMP_FRAMES_READY_PATH)
 
-    model_imported = load_model(model_path)
+    model_imported = load_model(model_rnn_path)
+    print("Loaded model from path " + model_rnn_path)
 
-    print("Loaded model from path " + model_path)
+    predictions = []
 
-    prediction = model_imported.predict(frames_to_predict)
+    files = os.listdir(TMP_FRAMES_READY_PATH)
+    iterations = math.ceil(len(files) / MAX_SEQ_LENGTH)
 
-    return prediction
+    for i in range(0, iterations):
+        frames_to_predict = prepare_frames(i*MAX_SEQ_LENGTH, model_cnn_path)
+        prediction = model_imported.predict(frames_to_predict)
+        predictions.append(prediction[0])
 
-def print_prediction(prediction):
+    return predictions
+
+
+def print_prediction(predictions):
     class_vocab = [
     "Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise", "Other"
     ]
     print(class_vocab)
     results = []
-    for i, result in enumerate(prediction):
-        result_argmax = result.argmax()
-        result_label = class_vocab[result_argmax]
+
+    i = 0
     
-        results.append(f"frame {i} - result {result_label}")
+    for prediction in predictions:
+    
+        for result in prediction:
+            result_argmax = result.argmax()
+            result_label = class_vocab[result_argmax]
+        
+            results.append(f"frame {i} - result {result_label}")
+            i += 1
     
     return results
