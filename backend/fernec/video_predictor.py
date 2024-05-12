@@ -287,6 +287,7 @@ def print_prediction(predictions):
     print(class_vocab)
     results = []
 
+    len_files = len(os.listdir(TMP_FRAMES_READY_PATH))
     i = 0
     
     for prediction in predictions:
@@ -294,8 +295,10 @@ def print_prediction(predictions):
         for result in prediction:
             result_argmax = result.argmax()
             result_label = class_vocab[result_argmax]
-        
-            results.append(f"frame {i} - result {result_label}")
+
+            #TODO: We should find a better way to avoid the masked results.
+            if i < len_files:
+                results.append(f"frame {i} - result {result_label}")
             i += 1
     
     return results
