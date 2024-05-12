@@ -207,52 +207,46 @@ def get_frames_to_predict(frames_ready_path):
 
     return images
 
-def prepare_frames(start_index, model_cnn_path, verbose=False):
+def prepare_frames(model_cnn_path, verbose=False):
     cnn_model = load_model(model_cnn_path)
     
     model = Sequential()
     for layer in cnn_model.layers[:-1]: # go through until last layer
         model.add(layer)
 
-    frames_features = np.zeros(shape=(MAX_SEQ_LENGTH, NUM_FEATURES), dtype="float32")
-    frames_mask = np.ones(shape=(MAX_SEQ_LENGTH))
-    idx = 0
+    files = os.listdir(TMP_FRAMES_READY_PATH)
+    ITERATIONS = math.ceil(len(files) / MAX_SEQ_LENGTH)
 
-    #files = os.listdir(AFF_WILD2_TMP_FRAMES_READY_PATH)
-    #frames = files[:MAX_SEQ_LENGTH]
+    frames_features = np.zeros(shape=(ITERATIONS, MAX_SEQ_LENGTH, NUM_FEATURES), dtype="float32")
+    frames_mask = np.ones(shape=(ITERATIONS, MAX_SEQ_LENGTH))
 
-    #frames = files
-    #total_frames = len(frames)
-    #sample_step = total_frames // MAX_SEQ_LENGTH
+    for iteration in range(0, ITERATIONS):
+        idx = 0
 
-    for i in range(0, MAX_SEQ_LENGTH):
-        frame_path = TMP_FRAMES_READY_PATH + f"face_{i + start_index}.jpg"
+        for i in range(0, MAX_SEQ_LENGTH):
+            frame_path = TMP_FRAMES_READY_PATH + f"face_{i + iteration}.jpg"
 
-        if verbose:
-            print("Leo: " + frame_path)
-
-        if os.path.isfile(frame_path):
-            
-            frame = cv2.imread(frame_path)
-            img = np.reshape(frame, (HEIGHT, WIDTH, CHANNELS))
-            img = np.expand_dims(img, axis=0)
-    
-            prediction = model.predict(img, verbose=0) # shape (1, num_features)
-            assert len(prediction[0]) == NUM_FEATURES, 'Error features'
-    
-            frames_features[idx] = prediction[0]
-            
-        else:
-            
             if verbose:
-                print("File not found, filling mask")
-            frames_mask[idx] = 0
-            
-        idx += 1
+                print("Leo: " + frame_path)
 
-    frames_features = frames_features[None, ...]
-    frames_mask = frames_mask[None, ...]
-    
+            if os.path.isfile(frame_path):
+                
+                frame = cv2.imread(frame_path)
+                img = np.reshape(frame, (HEIGHT, WIDTH, CHANNELS))
+                img = np.expand_dims(img, axis=0)
+        
+                prediction = model.predict(img, verbose=0) # shape (1, num_features)
+                assert len(prediction[0]) == NUM_FEATURES, 'Error features'
+        
+                frames_features[iteration, idx] = prediction[0]
+                
+            else:
+                
+                if verbose:
+                    print("File not found, filling mask")
+                frames_mask[iteration, idx] = 0
+                
+            idx += 1
 
     return [frames_features, frames_mask]
 
@@ -267,15 +261,8 @@ def predict_video(video_path, model_cnn_path, model_rnn_path):
     model_imported = load_model(model_rnn_path)
     print("Loaded model from path " + model_rnn_path)
 
-    predictions = []
-
-    files = os.listdir(TMP_FRAMES_READY_PATH)
-    iterations = math.ceil(len(files) / MAX_SEQ_LENGTH)
-
-    for i in range(0, iterations):
-        frames_to_predict = prepare_frames(i*MAX_SEQ_LENGTH, model_cnn_path)
-        prediction = model_imported.predict(frames_to_predict)
-        predictions.append(prediction[0])
+    frames_to_predict = prepare_frames(model_cnn_path)
+    predictions = model_imported.predict(frames_to_predict)
 
     return predictions
 
