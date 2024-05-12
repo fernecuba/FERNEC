@@ -212,7 +212,7 @@ def predict_video(video_path, model_cnn_path, model_rnn_path):
 
 def print_prediction(predictions):
     class_vocab = [
-    "Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise", "Other"
+    "Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"
     ]
     print(class_vocab)
     results = []
