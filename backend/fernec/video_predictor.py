@@ -151,61 +151,6 @@ def process_frames(frames_path, frames_ready_path, batch_size=20, verbose=False)
     
     print("Procesamiento completado.")
 
-def get_pixels(filename, thumbnail_size=None, verbose=False):
-    if verbose:
-        print(f"image name {filename}")
-
-    img = Image.open(filename) #.convert('L')
-    if thumbnail_size:
-        img.thumbnail(thumbnail_size, Image.LANCZOS)
-    if verbose:
-        print(img.size)
-        display.display(img)
-
-    return list(img.getdata())
-
-def get_label_processor(labels_series):
-    label_processor = keras.layers.StringLookup(
-      num_oov_indices=0, vocabulary=np.unique(labels_series)
-    )
-    print(label_processor.get_vocabulary())
-    return label_processor
-
-
-def prepare_data(data, height, width, channels):
-    """ Prepare data for modeling
-        input: data frame with labels und pixel data
-        output: image and label array """
-
-    image_array = np.zeros(shape=(len(data), height, width, channels))
-
-    data_image = data["pixels"].apply(lambda x: np.reshape(np.array(x).flatten(), (height, width, channels)))
-
-    # TODO: if data_image.values returns values in order, this can be replaced with np.array(data_image.values)
-    for i, pixel in enumerate(data_image):
-        image_array[i] = pixel
-
-    return image_array
-
-def get_frames_to_predict(frames_ready_path):
-    
-    files = os.listdir(frames_ready_path)
-    df = pd.DataFrame({
-        "file_name": files
-    })
-
-    pixels_list = []
-    for index, row in df.iterrows():
-        pixels_list.append(get_pixels(frames_ready_path + f"{row['file_name']}"))
-    
-    # Asignamos la lista de píxeles a la columna 'pixels'
-    df["pixels"] = pixels_list    
-    
-    image_array = prepare_data(df, HEIGHT, WIDTH, CHANNELS)
-    images = image_array.reshape((image_array.shape[0], HEIGHT, WIDTH, CHANNELS))
-    images = images.astype('float32')/255
-
-    return images
 
 def prepare_frames(model_cnn_path, verbose=False):
     cnn_model = load_model(model_cnn_path)
@@ -255,8 +200,6 @@ def predict_video(video_path, model_cnn_path, model_rnn_path):
     split_video_into_frames(video_path)
     
     process_frames(TMP_FRAMES_PATH, TMP_FRAMES_READY_PATH)
-    
-    frames_to_predict = get_frames_to_predict(TMP_FRAMES_READY_PATH)
 
     model_imported = load_model(model_rnn_path)
     print("Loaded model from path " + model_rnn_path)
