@@ -1,5 +1,6 @@
 import { SVGProps } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -10,7 +11,7 @@ export default function Home() {
             <div className="container px-4 md:px-6">
               <div className="mx-auto max-w-6xl space-y-12">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-                  <img
+                  <Image
                     alt="Face Emotion Recognition"
                     className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
                     height="400"
@@ -84,8 +85,8 @@ export default function Home() {
                               </h3>
                               <p>
                                 Our AI-powered face emotion recognition system
-                                monitors the candidate's facial expressions and
-                                body language throughout the interview.
+                                monitors the candidate&apos;s facial expressions
+                                and body language throughout the interview.
                               </p>
                             </div>
                           </div>
@@ -101,15 +102,15 @@ export default function Home() {
                               </h3>
                               <p>
                                 Receive comprehensive reports with detailed
-                                insights into the candidate's emotional state,
-                                engagement levels, and potential biases.
+                                insights into the candidate&apos;s emotional
+                                state, engagement levels, and potential biases.
                               </p>
                             </div>
                           </div>
                         </li>
                       </ol>
                     </div>
-                    <img
+                    <Image
                       alt="How It Works"
                       className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
                       height="400"
@@ -135,7 +136,7 @@ export default function Home() {
                       Try a Demo
                     </Link>
                     <Link
-                      className="inline-flex h-10 items-center justify-center rounded-md border border-gray-200 border-gray-200 bg-white px-8 text-sm font-medium shadow-sm transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:border-gray-800 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus-visible:ring-gray-300"
+                      className="inline-flex h-10 items-center justify-center rounded-md border border-gray-200 bg-white px-8 text-sm font-medium shadow-sm transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:border-gray-800 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus-visible:ring-gray-300"
                       href="#"
                     >
                       Contact Sales
