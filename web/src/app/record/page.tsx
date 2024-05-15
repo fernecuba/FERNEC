@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Trash2, FileUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import Questions from "./Questions";
 
 const RecordingPulse = ({ className }: { className?: string }) => (
   <span className={cn("relative flex h-4 w-4", className)}>
@@ -82,7 +83,7 @@ export default function Record() {
   return (
     <main className="flex h-screen flex-col p-24">
       <div className="h-full container flex flex-row p-0 space-x-2">
-        <div className="w-3/4 h-full flex flex-col border-2 bg-gray-200 rounded-lg">
+        <div className="w-3/4 h-full flex flex-col border-2 bg-gray-200 rounded-lg shrink-0">
           <div className="flex flex-1 relative" key={recording.id}>
             {recording.status === "RECORDING" && (
               <RecordingPulse className="absolute top-2 left-2 z-10" />
@@ -147,7 +148,9 @@ export default function Record() {
             )}
           </div>
         </div>
-        <div className="flex-1 border-2 rounded-lg bg-gray-200 gap-2"></div>
+        <div className="border-2 rounded-lg bg-gray-200 gap-2">
+          <Questions />
+        </div>
       </div>
     </main>
   );
