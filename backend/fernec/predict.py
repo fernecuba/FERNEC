@@ -8,7 +8,7 @@ from keras.src.saving import serialization_lib
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fernec.models import ImageItem, ImagePrediction, VideoPrediction
-from fernec.video_predictor import predict_video, print_prediction
+from fernec.video_predictor import predict_video, print_prediction, count_frames_per_emotion
 
 router = APIRouter(prefix="/predict")
 
@@ -63,9 +63,8 @@ async def predict_video_endpoint(request: Request) -> VideoPrediction:
 
         prediction = predict_video(temp_video_path, model_cnn_path, model_rnn_path)
 
-        return JSONResponse(status_code=200, content={
-            "prediction": print_prediction(prediction)
-        })
+        result = count_frames_per_emotion(prediction)
+        return JSONResponse(status_code=200, content=result)
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))    

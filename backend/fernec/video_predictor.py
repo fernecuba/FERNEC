@@ -20,7 +20,7 @@ HEIGHT_POSITION = 2
 WIDTH_POSITION = 3
 Y = 0
 X = 1
-MAX_SEQ_LENGTH = 40
+MAX_SEQ_LENGTH = 10
 NUM_FEATURES = 1024
 
 def clean_folder(folder_path):
@@ -211,6 +211,15 @@ def predict_video(video_path, model_cnn_path, model_rnn_path):
 
 
 def print_prediction(predictions):
+    """
+    Prints the predicted labels for each frame in a video.
+
+    Args:
+        predictions (list): A list of predictions for each frame in the video.
+
+    Returns:
+        list: A list of strings representing the frame number and the predicted label for each frame.
+    """
     class_vocab = [
     "Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"
     ]
@@ -232,3 +241,30 @@ def print_prediction(predictions):
             i += 1
     
     return results
+
+
+def count_frames_per_emotion(predictions):
+    class_vocab = ["Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"]
+    emotion_counts = {emotion: 0 for emotion in class_vocab}
+
+    len_files = len(os.listdir(TMP_FRAMES_READY_PATH))
+    i = 0
+
+    for prediction in predictions:
+        for result in prediction:
+            result_argmax = np.argmax(result)
+            result_label = class_vocab[result_argmax]
+            
+            if i < len_files:
+                emotion_counts[result_label] += 1
+            i += 1
+
+    total_frames = sum(emotion_counts.values())
+    emotions_list = [{"label": emotion, "total_frames": count} for emotion, count in emotion_counts.items()]
+
+    result = {
+        "total_frames": total_frames,
+        "emotions": emotions_list
+    }
+
+    return result
