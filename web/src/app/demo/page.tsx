@@ -3,7 +3,7 @@ import UploadVideo from "@/components/video/UploadVideo";
 import EmotionResults from "@/components/video/EmotionResults";
 import { useState } from "react";
 
-export default function Page() {
+export default function Demo() {
   const [emotion, setEmotion] = useState<string>();
 
   return (
