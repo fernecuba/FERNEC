@@ -34,7 +34,7 @@ def clean_folder(folder_path):
         elif os.path.isdir(full_path):
             shutil.rmtree(full_path)
 
-def split_video_into_frames(video_path, target_fps=29):
+def split_video_into_frames(video_path, target_fps=23):
     # Open the video
     vidcap = cv2.VideoCapture(video_path)
     success, image = vidcap.read()
