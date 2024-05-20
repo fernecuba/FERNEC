@@ -210,6 +210,7 @@ def predict_video(video_path, model_cnn_path, model_rnn_path):
     return predictions
 
 
+# We are not going to use this one to return the predictions in the endpoint for now.
 def print_prediction(predictions):
     """
     Prints the predicted labels for each frame in a video.
@@ -244,6 +245,25 @@ def print_prediction(predictions):
 
 
 def count_frames_per_emotion(predictions):
+    """
+    Counts the number of frames per emotion in the given predictions.
+
+    Args:
+        predictions (list): A list of predictions, where each prediction is a list of emotion probabilities.
+
+    Returns:
+        dict: A dictionary containing the total number of frames and a list of emotions with their respective frame counts.
+            Example:
+            {
+                "total_frames": 100,
+                "emotions": [
+                    {"label": "Neutral", "total_frames": 20},
+                    {"label": "Anger", "total_frames": 10},
+                    {"label": "Disgust", "total_frames": 5},
+                    ...
+                ]
+            }
+    """
     class_vocab = ["Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"]
     emotion_counts = {emotion: 0 for emotion in class_vocab}
 
