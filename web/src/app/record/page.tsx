@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Trash2, FileUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { uploadVideo } from "@/lib/actions";
 
 const RecordingPulse = ({ className }: { className?: string }) => (
   <span className={cn("relative flex h-4 w-4", className)}>
@@ -53,18 +54,13 @@ export default function Record() {
       alert("No video to upload");
       return;
     }
-    // Upload the blob to a back-end
-    const formData = new FormData();
 
-    formData.append(
-      "video_file",
-      recorded.blob,
-      `${recorded.fileName}.${recorded.fileType}`
-    );
-    const response = await fetch("/api/predict/video", {
-      method: "POST",
-      body: formData,
+    const response = await uploadVideo({
+      video: recorded.blob,
+      fileName: recorded.fileName,
+      fileType: recorded.fileType,
     });
+
     toast({
       description: response.ok ? "File upload" : "Error uploading file",
       variant: response.ok ? "default" : "destructive",

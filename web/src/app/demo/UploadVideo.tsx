@@ -9,61 +9,44 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { uploadVideo } from "@/lib/actions";
+import { useToast } from "@/components/ui/use-toast";
 
-export default function UploadVideo({
-  setEmotionResult,
-}: {
-  setEmotionResult: (emotion: string) => void;
-}) {
+export default function UploadVideo({ className }: { className?: string }) {
   const [submitFile, setSubmitFile] = useState<File>();
+  const { toast } = useToast();
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!submitFile) return;
 
-    let reader = new FileReader();
-    reader.readAsDataURL(submitFile);
-    reader.onload = async function () {
-      // Split to remove data:image/png;base64
-      // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/result
-      const image_base64 = (reader.result as string).split(",")[1];
+    const response = await uploadVideo({
+      video: submitFile,
+      fileName: submitFile.name,
+      fileType: submitFile.type,
+    });
 
-      const response = await fetch("/api/predict/image", {
-        method: "POST",
-        body: JSON.stringify({
-          image_base64,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        const result = (await response.json()) as {
-          emotion: string;
-          predictions: number[];
-        };
-        setEmotionResult(result.emotion);
-      } else {
-        alert(`Failed ${await response.text()}`);
-      }
-    };
+    toast({
+      description: response.ok ? "File upload" : "Error uploading file",
+      variant: response.ok ? "default" : "destructive",
+    });
   };
 
   return (
-    <Card className="flex flex-col">
+    <Card className={cn("flex flex-col", className)}>
       <CardHeader>
-        <CardTitle>Upload Video</CardTitle>
+        <CardTitle>Upload Interview</CardTitle>
         <CardDescription>
           Select a video from your device to upload.
         </CardDescription>
       </CardHeader>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="flex-1 flex flex-col">
         <CardContent className="flex flex-1">
           <input
             id="pickImage"
             type="file"
-            accept="image/png, image/jpeg"
+            accept="video/mp4,video/x-m4v,video/*"
             className="hidden"
             onChange={(e) => {
               if (e.target.files) {
@@ -73,14 +56,12 @@ export default function UploadVideo({
           />
           <label
             htmlFor="pickImage"
-            className="border-2 border-dashed border-gray-200/40 rounded-lg w-full flex items-center justify-center h-48 relative overflow-hidden"
+            className="border-2 border-dashed border-gray-200/40 rounded-lg w-full flex items-center justify-center relative overflow-hidden"
           >
             {submitFile ? (
-              <Image
-                alt="bluerabbit ia studio logo"
-                className="flex flex-1 object-cover"
+              <video
+                className="flex-none object-cover"
                 src={URL.createObjectURL(submitFile)}
-                fill={true}
               />
             ) : (
               <svg
@@ -101,7 +82,7 @@ export default function UploadVideo({
           </label>
         </CardContent>
         <CardFooter>
-          <Button className="w-full mt-3" type="submit">
+          <Button className="w-full" type="submit">
             Upload
           </Button>
         </CardFooter>
