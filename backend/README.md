@@ -1,18 +1,32 @@
 # Backend for FERNEC
 PoC based on the [FastAPI documentation](https://fastapi.tiangolo.com/tutorial/)
 
-## To install requirements
+## Run with Docker
+
+### Requirements
+
+- Create a folder named `models`
+- Place the CNN and RNN models in the `models` folder
+
+### Run
+
+- ```make build```
+- ```make start```
+
+## Run without Docker
+
+### To install requirements
 
 `pip install -r requirements.txt`
 
-## Setting Up
+### Setting Up
 
 Before running the `predict.py` script, you need to set the `MODEL_CNN_PATH` and `MODEL_RNN_PATH` environment variables to the path of your model file.
 
 ```export MODEL_CNN_PATH="/path/to/your/cnn_model/file"```
 ```export MODEL_RNN_PATH="/path/to/your/rnn_model/file"```
 
-## To run the server
+### To run the server
 
 `python main.py`
 
