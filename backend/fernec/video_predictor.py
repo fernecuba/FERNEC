@@ -23,6 +23,7 @@ X = 1
 MAX_SEQ_LENGTH = 10
 NUM_FEATURES = 1024
 
+
 def clean_folder(folder_path):
     if not os.path.isdir(folder_path):
         raise ValueError("La ruta especificada no es una carpeta.")
@@ -33,6 +34,7 @@ def clean_folder(folder_path):
             os.remove(full_path)
         elif os.path.isdir(full_path):
             shutil.rmtree(full_path)
+
 
 def split_video_into_frames(video_path, target_fps=23):
     # Open the video
@@ -60,6 +62,7 @@ def split_video_into_frames(video_path, target_fps=23):
     # Close the video
     vidcap.release()
 
+
 # This function was used for the old face detector
 def get_points(box):
     '''
@@ -82,11 +85,13 @@ def get_boxes_from_face_detection(face_detection):
             boxes.append(face)
     return boxes
 
+
 def crop_image(image, bounding_box, verbose=False):
     cropped_image = image.crop((bounding_box[Y], bounding_box[X], bounding_box[HEIGHT_POSITION], bounding_box[WIDTH_POSITION]))
     if verbose:
         print(cropped_image.size)
     return cropped_image
+
 
 def generate_image_pixels(frame, box, output_folder, verbose=False):
     # frame to image
@@ -112,8 +117,10 @@ def generate_image_pixels(frame, box, output_folder, verbose=False):
         else:
             print("No box detected for cropping")
 
+
 def custom_sort(file_name):
     return int(file_name.split('_')[1].split('.')[0])
+
 
 def process_frames(frames_path, frames_ready_path, batch_size=20, verbose=False):
     detector = facenet_MTCNN()

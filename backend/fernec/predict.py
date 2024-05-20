@@ -19,6 +19,7 @@ model_cnn_path = os.getenv('MODEL_CNN_PATH', './fernec/ia_models/cotatest.keras'
 model_rnn_path = os.getenv('MODEL_RNN_PATH', '/home/eche/Documents/TPP/notebooks/Modelos/model4_rnn_poc3.keras')
 model = load_model(model_cnn_path)
 
+
 @router.post('/image')
 async def predict_image(image_item: ImageItem) -> ImagePrediction:
     try:
@@ -43,7 +44,8 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
         })
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
+
 @router.post('/video')
 async def predict_video_endpoint(request: Request) -> VideoPrediction:
     try:
@@ -67,4 +69,4 @@ async def predict_video_endpoint(request: Request) -> VideoPrediction:
         return JSONResponse(status_code=200, content=result)
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))    
+        raise HTTPException(status_code=500, detail=str(e))
