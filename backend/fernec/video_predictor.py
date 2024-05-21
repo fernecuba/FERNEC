@@ -63,19 +63,6 @@ def split_video_into_frames(video_path, target_fps=23):
     vidcap.release()
 
 
-# This function was used for the old face detector
-def get_points(box):
-    '''
-        Args:
-            box (tuple): consisting of (x, y, w, h) were w is width and h is height
-        Returns:
-            tuple: (x, y, x + w, y + h) which can be thought as (x1, y1, x2, y2)
-    '''
-    # return [box[Y], box[X], box[Y] + box[HEIGHT], box[X] + box[WIDTH]]
-    # return box.tolist()
-    return box
-
-
 def get_boxes_from_face_detection(face_detection):
     boxes = []
     for face in face_detection:
