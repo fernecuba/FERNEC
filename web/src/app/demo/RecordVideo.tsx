@@ -14,7 +14,7 @@ const RecordingPulse = ({ className }: { className?: string }) => (
   </span>
 );
 
-export default function Record() {
+export default function RecordVideo({ className }: { className?: string }) {
   const {
     createRecording,
     openCamera,
@@ -76,8 +76,8 @@ export default function Record() {
   if (!recording) return null;
 
   return (
-    <main className="flex h-screen flex-col p-24">
-      <div className="h-full container flex flex-row p-0 space-x-2">
+    <main className={cn("flex flex-col", className)}>
+      <div className="h-full flex flex-row p-0 space-x-2">
         <div className="w-3/4 h-full flex flex-col border-2 bg-gray-200 rounded-lg">
           <div className="flex flex-1 relative" key={recording.id}>
             {recording.status === "RECORDING" && (

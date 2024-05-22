@@ -60,7 +60,7 @@ export default function UploadVideo({ className }: { className?: string }) {
           >
             {submitFile ? (
               <video
-                className="flex-none object-cover"
+                className="object-fill absolute w-full h-full"
                 src={URL.createObjectURL(submitFile)}
               />
             ) : (
