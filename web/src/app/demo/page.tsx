@@ -12,16 +12,10 @@ export default function Demo() {
         <TabsTrigger value="record">Record</TabsTrigger>
         <TabsTrigger value="upload">Upload</TabsTrigger>
       </TabsList>
-      <TabsContent
-        value="record"
-        className="bg-red-200 w-full h-full flex-1 flex-col"
-      >
-        <RecordVideo className="flex-1 h-full w-full bg-orange-200" />
+      <TabsContent value="record" className="w-full h-full flex-1 flex-col">
+        <RecordVideo className="flex-1 h-full w-full" />
       </TabsContent>
-      <TabsContent
-        value="upload"
-        className="w-full h-full flex-1 flex-col bg-yellow-200"
-      >
+      <TabsContent value="upload" className="w-full h-full flex-1 flex-col">
         <UploadVideo className="flex-1 h-full" />
       </TabsContent>
     </Tabs>
