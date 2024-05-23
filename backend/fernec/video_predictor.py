@@ -11,6 +11,7 @@ TMP_FRAMES_PATH = "./temp/frames/"
 # In this path we will save the frames that are ready to be predicted
 TMP_FRAMES_READY_PATH = "temp/frames_ready/"
 
+# TODO: Move this to a config file?
 HEIGHT = 112
 WIDTH = 112
 CHANNELS = 3
@@ -21,6 +22,7 @@ X = 1
 MAX_SEQ_LENGTH = 10
 NUM_FEATURES = 1024
 FRAMES_ORDER_MAGNITUDE = 5
+FACE_BATCH_SIZE = 20
 
 def prepare_frames(model_cnn_path, verbose=False):
     cnn_model = load_model(model_cnn_path)
@@ -74,7 +76,7 @@ def predict_video(video_path, model_cnn_path, model_rnn_path):
     get_frames_from_video(
             video_path,
             TMP_FRAMES_READY_PATH,
-            20,
+            FACE_BATCH_SIZE,
             CHANNELS,
             (HEIGHT, WIDTH),
             FRAMES_ORDER_MAGNITUDE,
