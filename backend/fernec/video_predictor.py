@@ -7,6 +7,7 @@ import numpy as np
 from PIL import Image
 from facenet_pytorch import MTCNN as facenet_MTCNN
 from keras.models import Sequential, load_model
+from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 
 # Temp path to save the frames extracted from the video
 TMP_FRAMES_PATH = "./temp/frames/"
@@ -22,6 +23,7 @@ Y = 0
 X = 1
 MAX_SEQ_LENGTH = 10
 NUM_FEATURES = 1024
+FRAMES_ORDER_MAGNITUDE = 5
 
 
 def clean_folder(folder_path):
@@ -163,7 +165,7 @@ def prepare_frames(model_cnn_path, verbose=False):
         idx = 0
 
         for i in range(0, MAX_SEQ_LENGTH):
-            frame_path = TMP_FRAMES_READY_PATH + f"face_{i + (iteration * MAX_SEQ_LENGTH)}.jpg"
+            frame_path = TMP_FRAMES_READY_PATH + f"{str(i + (iteration * MAX_SEQ_LENGTH)).zfill(FRAMES_ORDER_MAGNITUDE)}.jpg"
 
             if verbose:
                 print("Leo: " + frame_path)
@@ -191,9 +193,20 @@ def prepare_frames(model_cnn_path, verbose=False):
 
 
 def predict_video(video_path, model_cnn_path, model_rnn_path):
-    split_video_into_frames(video_path)
+    # split_video_into_frames(video_path)
     
-    process_frames(TMP_FRAMES_PATH, TMP_FRAMES_READY_PATH)
+    # process_frames(TMP_FRAMES_PATH, TMP_FRAMES_READY_PATH)
+
+    get_frames_from_video(
+            video_path,
+            TMP_FRAMES_READY_PATH,
+            20,
+            CHANNELS,
+            (HEIGHT, WIDTH),
+            FRAMES_ORDER_MAGNITUDE,
+            folder_clean=True,
+            faces_only=True
+    )
 
     model_imported = load_model(model_rnn_path)
     print("Loaded model from path " + model_rnn_path)
