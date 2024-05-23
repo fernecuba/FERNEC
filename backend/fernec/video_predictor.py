@@ -163,7 +163,7 @@ def prepare_frames(model_cnn_path, verbose=False):
         idx = 0
 
         for i in range(0, MAX_SEQ_LENGTH):
-            frame_path = TMP_FRAMES_READY_PATH + f"face_{i + iteration}.jpg"
+            frame_path = TMP_FRAMES_READY_PATH + f"face_{i + (iteration * MAX_SEQ_LENGTH)}.jpg"
 
             if verbose:
                 print("Leo: " + frame_path)
