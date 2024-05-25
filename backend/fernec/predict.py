@@ -10,8 +10,8 @@ from keras.src.saving import serialization_lib
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse
 
-from ..fernec.models import ImageItem, ImagePrediction, VideoPrediction
-from ..fernec.video_predictor import predict_video, count_frames_per_emotion
+from fernec.models import ImageItem, ImagePrediction, VideoPrediction
+from fernec.video_predictor import predict_video, count_frames_per_emotion
 
 router = APIRouter(prefix="/predict")
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/predict")
 serialization_lib.enable_unsafe_deserialization()
 # Load model
 model_cnn_path = os.getenv('MODEL_CNN_PATH', './fernec/ia_models/cotatest.keras')
-model_rnn_path = os.getenv('MODEL_RNN_PATH', '/home/eche/Documents/TPP/notebooks/Modelos/model4_rnn_poc3.keras')
+model_rnn_path = os.getenv('MODEL_RNN_PATH', './fernec/ia_models/cotatest_rnn_4.keras')
 model = load_model(model_cnn_path)
 
 

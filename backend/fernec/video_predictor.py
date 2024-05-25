@@ -5,8 +5,8 @@ import numpy as np
 
 from keras.models import Sequential, load_model
 
-from ..preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
-from ..preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
+from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
+from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 
 # Temp path to save the frames extracted from the video
 TMP_FRAMES_PATH = "./temp/frames/"
