@@ -2,9 +2,11 @@ import os
 import cv2
 import math
 import numpy as np
+
 from keras.models import Sequential, load_model
-from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
-from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
+
+from ..preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
+from ..preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 
 # Temp path to save the frames extracted from the video
 TMP_FRAMES_PATH = "./temp/frames/"
@@ -24,6 +26,7 @@ NUM_FEATURES = 1024
 FRAMES_ORDER_MAGNITUDE = 5
 FACE_BATCH_SIZE = 20
 
+
 def prepare_frames(model_cnn_path, verbose=False):
     cnn_model = load_model(model_cnn_path)
     
@@ -32,12 +35,12 @@ def prepare_frames(model_cnn_path, verbose=False):
         model.add(layer)
 
     files = os.listdir(TMP_FRAMES_READY_PATH)
-    ITERATIONS = math.ceil(len(files) / MAX_SEQ_LENGTH)
+    iterations = math.ceil(len(files) / MAX_SEQ_LENGTH)
 
-    frames_features = np.zeros(shape=(ITERATIONS, MAX_SEQ_LENGTH, NUM_FEATURES), dtype="float32")
-    frames_mask = np.ones(shape=(ITERATIONS, MAX_SEQ_LENGTH))
+    frames_features = np.zeros(shape=(iterations, MAX_SEQ_LENGTH, NUM_FEATURES), dtype="float32")
+    frames_mask = np.ones(shape=(iterations, MAX_SEQ_LENGTH))
 
-    for iteration in range(0, ITERATIONS):
+    for iteration in range(0, iterations):
         idx = 0
 
         for i in range(0, MAX_SEQ_LENGTH):
@@ -104,7 +107,7 @@ def print_prediction(predictions):
         list: A list of strings representing the frame number and the predicted label for each frame.
     """
     class_vocab = [
-    "Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"
+        "Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"
     ]
     print(class_vocab)
     results = []
@@ -118,7 +121,7 @@ def print_prediction(predictions):
             result_argmax = result.argmax()
             result_label = class_vocab[result_argmax]
 
-            #TODO: We should find a better way to avoid the masked results.
+            # TODO: We should find a better way to avoid the masked results.
             if i < len_files:
                 results.append(f"frame {i} - result {result_label}")
             i += 1
@@ -157,7 +160,7 @@ def count_frames_per_emotion(predictions):
             result_argmax = np.argmax(result)
             result_label = class_vocab[result_argmax]
             
-            #TODO: We should find a better way to avoid the masked results.
+            # TODO: We should find a better way to avoid the masked results.
             if i < len_files:
                 emotion_counts[result_label] += 1
             i += 1

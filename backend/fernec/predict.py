@@ -1,14 +1,17 @@
 import os
-import base64
 import io
+import base64
 import numpy as np
+
 from PIL import Image
+from starlette.responses import JSONResponse
 from tensorflow.keras.models import load_model
 from keras.src.saving import serialization_lib
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse
-from fernec.models import ImageItem, ImagePrediction, VideoPrediction
-from fernec.video_predictor import predict_video, print_prediction, count_frames_per_emotion
+
+from ..fernec.models import ImageItem, ImagePrediction, VideoPrediction
+from ..fernec.video_predictor import predict_video, count_frames_per_emotion
 
 router = APIRouter(prefix="/predict")
 
