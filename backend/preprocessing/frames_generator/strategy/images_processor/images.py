@@ -4,6 +4,26 @@ import numpy as np
 from PIL import Image
 
 
+def open_image(file_path, shape):
+    image = Image.open(file_path)
+    if should_convert_to_grayscale(shape):
+        image = image.convert('L')
+
+    return np.reshape(np.array(list(image.getdata())).flatten(), shape).tolist()
+
+
+def save_image(image, output_file_path):
+    try:
+        image.save(output_file_path)
+    except Exception as e:
+        print(f"exception {e} with tuple {image}")
+        raise e
+
+
+def should_convert_to_grayscale(shape):
+    return len(shape) >= 3 and shape[2] == 1
+
+
 def crop_image(image, bounding_box, verbose=False):
     cropped_image = image.crop((bounding_box[0], bounding_box[1], bounding_box[2], bounding_box[3]))
     if verbose:
@@ -37,9 +57,11 @@ def pad_pixels(pixels):
     return np.array([add_padding(p, max_shape) for p in pixels])
 
 
-def get_pixels(frame, box, thumbnail_size=None, return_image=None, verbose=False):
+def get_pixels(frame, box, channels, thumbnail_size=None, return_image=False, verbose=False):
     # frame to image
-    image = Image.fromarray(frame).convert('L')
+    image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    if channels == 1:
+        image = image.convert('L')
 
     # crop image to keep only face, if possible
     if len(box) != 0:
@@ -49,16 +71,22 @@ def get_pixels(frame, box, thumbnail_size=None, return_image=None, verbose=False
     if thumbnail_size:
         image = resize_image(image, thumbnail_size, verbose)
 
-    pixels = list(image.getdata())
+    shape = thumbnail_size + (channels, )
+    # pixels = list(image.getdata())
+    pixels = np.reshape(np.array(list(image.getdata())).flatten(), shape).tolist()
     if verbose:
         print(len(pixels))
     if return_image:
+        # print(f"about to return pixels and image: {pixels} - {image}")
         return pixels, image
+    # print(f"about to return pixels: {pixels}")
     return pixels
 
 
-def get_frames(filename, thumbnail_size=None, verbose=False):
-    img = Image.open(filename).convert('L')
+def get_frames(filename, channels, thumbnail_size=None, verbose=False):
+    img = Image.open(filename)
+    if channels == 1:
+        img = img.convert('L')
     if thumbnail_size:
         img.thumbnail(thumbnail_size, Image.LANCZOS)
     if verbose:

@@ -5,3 +5,12 @@ Authored by
 - Rodrigo Cotarelo
 - Rodrigo Etchegaray Campisi
 - Nicolas Longo
+
+
+## Run
+
+Build the app:
+```make build```
+
+Start the app:
+```make start```

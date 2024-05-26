@@ -1,14 +1,17 @@
 import os
-import base64
 import io
+import base64
 import numpy as np
+
 from PIL import Image
+from starlette.responses import JSONResponse
 from tensorflow.keras.models import load_model
 from keras.src.saving import serialization_lib
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse
+
 from fernec.models import ImageItem, ImagePrediction, VideoPrediction
-from fernec.video_predictor import predict_video, print_prediction
+from fernec.video_predictor import predict_video, count_frames_per_emotion
 
 router = APIRouter(prefix="/predict")
 
@@ -16,8 +19,9 @@ router = APIRouter(prefix="/predict")
 serialization_lib.enable_unsafe_deserialization()
 # Load model
 model_cnn_path = os.getenv('MODEL_CNN_PATH', './fernec/ia_models/cotatest.keras')
-model_rnn_path = os.getenv('MODEL_RNN_PATH', '/home/eche/Documents/TPP/notebooks/Modelos/model4_rnn_poc3.keras')
+model_rnn_path = os.getenv('MODEL_RNN_PATH', './fernec/ia_models/cotatest_rnn_4.keras')
 model = load_model(model_cnn_path)
+
 
 @router.post('/image')
 async def predict_image(image_item: ImageItem) -> ImagePrediction:
@@ -43,7 +47,8 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
         })
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
+
 @router.post('/video')
 async def predict_video_endpoint(request: Request) -> VideoPrediction:
     try:
@@ -61,11 +66,10 @@ async def predict_video_endpoint(request: Request) -> VideoPrediction:
         with open(temp_video_path, "wb") as temp_video:
             temp_video.write(contents)
 
-        prediction = predict_video(temp_video_path, model_rnn_path)
+        prediction = predict_video(temp_video_path, model_cnn_path, model_rnn_path)
 
-        return JSONResponse(status_code=200, content={
-            "prediction": print_prediction(prediction)
-        })
+        result = count_frames_per_emotion(prediction)
+        return JSONResponse(status_code=200, content=result)
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))    
+        raise HTTPException(status_code=500, detail=str(e))

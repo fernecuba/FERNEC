@@ -8,7 +8,7 @@ print('Running on device: {}'.format(device))
 detector = MTCNN(selection_method="largest", min_face_size=40)
 
 
-def detect_faces(pixels):
+def detect_faces(pixels, faces_only=False):
     detection = detector.detect(pixels)[0]
     boxes = []
     for face in detection:
@@ -17,5 +17,8 @@ def detect_faces(pixels):
             # the bounding boxes
             boxes.append(face[0])
         else:
-            boxes.append([])
+            if faces_only:
+                boxes.append(face)
+            else:
+                boxes.append([])
     return boxes
