@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Trash2, FileUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { uploadVideo } from "@/lib/actions";
+import Questions from "./Questions";
 
 const RecordingPulse = ({ className }: { className?: string }) => (
   <span className={cn("relative flex h-4 w-4", className)}>
@@ -143,7 +144,9 @@ export default function RecordVideo({ className }: { className?: string }) {
             )}
           </div>
         </div>
-        <div className="flex-1 border-2 rounded-lg bg-gray-200 gap-2"></div>
+        <div className="flex-1 border-2 rounded-lg bg-gray-200 gap-2">
+          <Questions />
+        </div>
       </div>
     </main>
   );
