@@ -1,27 +1,22 @@
-import os
 import io
+import uuid
 import base64
 import numpy as np
 
 from PIL import Image
 from starlette.responses import JSONResponse
-from tensorflow.keras.models import load_model
-from keras.src.saving import serialization_lib
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 
 from fernec.models import ImageItem, ImagePrediction, VideoPrediction
 from fernec.video_predictor import predict_video, count_frames_per_emotion
+from fernec.ia_models import cnn_model, rnn_model
+
 
 router = APIRouter(prefix="/predict")
 
-# Needed to load model
-serialization_lib.enable_unsafe_deserialization()
-# Load model
-model_cnn_path = os.getenv('MODEL_CNN_PATH', './fernec/ia_models/cotatest.keras')
-model_rnn_path = os.getenv('MODEL_RNN_PATH', './fernec/ia_models/cotatest_rnn_4.keras')
-model = load_model(model_cnn_path)
-
+# TODO: this is good enough only for 1 worker
+predictions = {}
 
 @router.post('/image')
 async def predict_image(image_item: ImageItem) -> ImagePrediction:
@@ -49,8 +44,18 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get('/{prediction_id}')
+def get_predictions(prediction_id: str) -> JSONResponse:
+    if prediction_id not in predictions.keys():
+        return JSONResponse(content={"message": f"prediction with id {prediction_id} does not exist"}, status_code=404)
+    if predictions[prediction_id] is None:
+        return JSONResponse(content={"message": f"prediction with id {prediction_id} is not ready yet"},
+                            status_code=202)
+    return JSONResponse(content=predictions[prediction_id], status_code=200)
+
+
 @router.post('/video')
-async def predict_video_endpoint(request: Request) -> VideoPrediction:
+async def predict_video_endpoint(request: Request, background_tasks: BackgroundTasks) -> JSONResponse:
     try:
         # Verify there is a file in the request
         form_data = await request.form()
@@ -66,10 +71,18 @@ async def predict_video_endpoint(request: Request) -> VideoPrediction:
         with open(temp_video_path, "wb") as temp_video:
             temp_video.write(contents)
 
-        prediction = predict_video(temp_video_path, model_cnn_path, model_rnn_path)
-
-        result = count_frames_per_emotion(prediction)
-        return JSONResponse(status_code=200, content=result)
+        unique_id = str(uuid.uuid4())
+        background_tasks.add_task(predict_video_async, temp_video_path, cnn_model, rnn_model, unique_id)
+        # i.e. prediction is calculating
+        predictions[unique_id] = None
+        return JSONResponse(status_code=202, content={"uuid": unique_id})
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def predict_video_async(temp_video_path, cnn_model, rnn_model, unique_id):
+    prediction = predict_video(temp_video_path, cnn_model, rnn_model)
+    result = count_frames_per_emotion(prediction)
+    predictions[unique_id] = result
+    print(f"prediction is done for unique_id {unique_id}")

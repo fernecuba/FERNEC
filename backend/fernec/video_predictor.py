@@ -27,13 +27,7 @@ FRAMES_ORDER_MAGNITUDE = 5
 FACE_BATCH_SIZE = 20
 
 
-def prepare_frames(model_cnn_path, verbose=False):
-    cnn_model = load_model(model_cnn_path)
-    
-    model = Sequential()
-    for layer in cnn_model.layers[:-1]: # go through until last layer
-        model.add(layer)
-
+def prepare_frames(cnn_model, verbose=False):
     files = os.listdir(TMP_FRAMES_READY_PATH)
     iterations = math.ceil(len(files) / MAX_SEQ_LENGTH)
 
@@ -55,7 +49,7 @@ def prepare_frames(model_cnn_path, verbose=False):
                 img = np.reshape(frame, (HEIGHT, WIDTH, CHANNELS))
                 img = np.expand_dims(img, axis=0)
         
-                prediction = model.predict(img, verbose=0) # shape (1, num_features)
+                prediction = cnn_model.predict(img, verbose=0) # shape (1, num_features)
                 assert len(prediction[0]) == NUM_FEATURES, 'Error features'
         
                 frames_features[iteration, idx] = prediction[0]
@@ -71,7 +65,7 @@ def prepare_frames(model_cnn_path, verbose=False):
     return [frames_features, frames_mask]
 
 
-def predict_video(video_path, model_cnn_path, model_rnn_path):
+def predict_video(video_path, cnn_model, rnn_model):
 
     create_folder_if_not_exists(TMP_FRAMES_READY_PATH)
     clean_folder(TMP_FRAMES_READY_PATH)
@@ -86,11 +80,8 @@ def predict_video(video_path, model_cnn_path, model_rnn_path):
             faces_only=True
     )
 
-    model_imported = load_model(model_rnn_path)
-    print("Loaded model from path " + model_rnn_path)
-
-    frames_to_predict = prepare_frames(model_cnn_path)
-    predictions = model_imported.predict(frames_to_predict)
+    frames_to_predict = prepare_frames(cnn_model)
+    predictions = rnn_model.predict(frames_to_predict)
 
     return predictions
 
