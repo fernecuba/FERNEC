@@ -3,8 +3,6 @@ import cv2
 import math
 import numpy as np
 
-from keras.models import Sequential, load_model
-
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 
@@ -27,13 +25,8 @@ FRAMES_ORDER_MAGNITUDE = 5
 FACE_BATCH_SIZE = 20
 
 
-def prepare_frames(model_cnn_path, verbose=False):
-    cnn_model = load_model(model_cnn_path)
+def prepare_frames(feature_extractor, verbose=False):
     
-    model = Sequential()
-    for layer in cnn_model.layers[:-1]: # go through until last layer
-        model.add(layer)
-
     files = os.listdir(TMP_FRAMES_READY_PATH)
     iterations = math.ceil(len(files) / MAX_SEQ_LENGTH)
 
@@ -55,7 +48,7 @@ def prepare_frames(model_cnn_path, verbose=False):
                 img = np.reshape(frame, (HEIGHT, WIDTH, CHANNELS))
                 img = np.expand_dims(img, axis=0)
         
-                prediction = model.predict(img, verbose=0) # shape (1, num_features)
+                prediction = feature_extractor.predict(img, verbose=0) # shape (1, num_features)
                 assert len(prediction[0]) == NUM_FEATURES, 'Error features'
         
                 frames_features[iteration, idx] = prediction[0]
@@ -71,7 +64,7 @@ def prepare_frames(model_cnn_path, verbose=False):
     return [frames_features, frames_mask]
 
 
-def predict_video(video_path, model_cnn_path, model_rnn_path):
+async def predict_video(video_path, feature_extractor, rnn_model):
 
     create_folder_if_not_exists(TMP_FRAMES_READY_PATH)
     clean_folder(TMP_FRAMES_READY_PATH)
@@ -86,11 +79,8 @@ def predict_video(video_path, model_cnn_path, model_rnn_path):
             faces_only=True
     )
 
-    model_imported = load_model(model_rnn_path)
-    print("Loaded model from path " + model_rnn_path)
-
-    frames_to_predict = prepare_frames(model_cnn_path)
-    predictions = model_imported.predict(frames_to_predict)
+    frames_to_predict = prepare_frames(feature_extractor)
+    predictions = rnn_model.predict(frames_to_predict)
 
     return predictions
 
