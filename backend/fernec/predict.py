@@ -15,7 +15,7 @@ from fernec.ia_models import cnn_model, rnn_model
 
 router = APIRouter(prefix="/predict")
 
-
+# TODO: this is good enough only for 1 worker
 predictions = {}
 
 @router.post('/image')
