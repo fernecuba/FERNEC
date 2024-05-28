@@ -7,6 +7,7 @@ PoC based on the [FastAPI documentation](https://fastapi.tiangolo.com/tutorial/)
 
 - Create a folder named `models`
 - Place the CNN and RNN models in the `models` folder
+- Specify the path to the models in the config.yml file 
 
 ### Run
 
