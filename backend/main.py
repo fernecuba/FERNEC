@@ -3,6 +3,7 @@ import os
 import yaml
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fernec.predict import router as predict_router
 from manage.get_state import router as state_router
 from fernec.video_predictor import VideoConfig
@@ -53,6 +54,16 @@ def gen_init(cfg: AppConfig):
 
 def get_application(cfg: AppConfig) -> FastAPI:
     application = FastAPI(lifespan=gen_init(cfg))
+
+    # Add CORS middleware
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # Allows all origins, adjust this in production
+        allow_credentials=True,
+        allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+        allow_headers=["*"],  # Allows all headers
+    )
+
     # Add routers
     application.include_router(predict_router)
     application.include_router(state_router)
