@@ -5,39 +5,35 @@ import numpy as np
 
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
+from pydantic import BaseModel
 
 # Temp path to save the frames extracted from the video
 TMP_FRAMES_PATH = "./temp/frames/"
 # In this path we will save the frames that are ready to be predicted
 TMP_FRAMES_READY_PATH = "temp/frames_ready/"
 
-# TODO: Move this to a config file?
-HEIGHT = 112
-WIDTH = 112
-CHANNELS = 3
-HEIGHT_POSITION = 2
-WIDTH_POSITION = 3
-Y = 0
-X = 1
-MAX_SEQ_LENGTH = 10
-NUM_FEATURES = 1024
-FRAMES_ORDER_MAGNITUDE = 5
-FACE_BATCH_SIZE = 20
+class VideoConfig(BaseModel):
+    MAX_SEQ_LENGTH: int
+    FRAMES_ORDER_MAGNITUDE: int
+    HEIGHT: int
+    WIDTH: int
+    CHANNELS: int = 3
+    NUM_FEATURES: int
+    FACE_BATCH_SIZE: int
 
-
-def prepare_frames(feature_extractor, verbose=False):
+def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
     
     files = os.listdir(TMP_FRAMES_READY_PATH)
-    iterations = math.ceil(len(files) / MAX_SEQ_LENGTH)
+    iterations = math.ceil(len(files) / cfg.MAX_SEQ_LENGTH)
 
-    frames_features = np.zeros(shape=(iterations, MAX_SEQ_LENGTH, NUM_FEATURES), dtype="float32")
-    frames_mask = np.ones(shape=(iterations, MAX_SEQ_LENGTH))
+    frames_features = np.zeros(shape=(iterations, cfg.MAX_SEQ_LENGTH, cfg.NUM_FEATURES), dtype="float32")
+    frames_mask = np.ones(shape=(iterations, cfg.MAX_SEQ_LENGTH))
 
     for iteration in range(0, iterations):
         idx = 0
 
-        for i in range(0, MAX_SEQ_LENGTH):
-            frame_path = TMP_FRAMES_READY_PATH + f"{str(i + (iteration * MAX_SEQ_LENGTH)).zfill(FRAMES_ORDER_MAGNITUDE)}.jpg"
+        for i in range(0, cfg.MAX_SEQ_LENGTH):
+            frame_path = TMP_FRAMES_READY_PATH + f"{str(i + (iteration * cfg.MAX_SEQ_LENGTH)).zfill(cfg.FRAMES_ORDER_MAGNITUDE)}.jpg"
 
             if verbose:
                 print("Leo: " + frame_path)
@@ -45,11 +41,11 @@ def prepare_frames(feature_extractor, verbose=False):
             if os.path.isfile(frame_path):
                 
                 frame = cv2.imread(frame_path)
-                img = np.reshape(frame, (HEIGHT, WIDTH, CHANNELS))
+                img = np.reshape(frame, (cfg.HEIGHT, cfg.WIDTH, cfg.CHANNELS))
                 img = np.expand_dims(img, axis=0)
         
                 prediction = feature_extractor.predict(img, verbose=0) # shape (1, num_features)
-                assert len(prediction[0]) == NUM_FEATURES, 'Error features'
+                assert len(prediction[0]) == cfg.NUM_FEATURES, 'Error features'
         
                 frames_features[iteration, idx] = prediction[0]
                 
@@ -64,7 +60,7 @@ def prepare_frames(feature_extractor, verbose=False):
     return [frames_features, frames_mask]
 
 
-async def predict_video(video_path, feature_extractor, rnn_model):
+def predict_video(video_path, feature_extractor, rnn_model, cfg: VideoConfig):
 
     create_folder_if_not_exists(TMP_FRAMES_READY_PATH)
     clean_folder(TMP_FRAMES_READY_PATH)
@@ -72,14 +68,14 @@ async def predict_video(video_path, feature_extractor, rnn_model):
     get_frames_from_video(
             video_path,
             TMP_FRAMES_READY_PATH,
-            FACE_BATCH_SIZE,
-            CHANNELS,
-            (HEIGHT, WIDTH),
-            FRAMES_ORDER_MAGNITUDE,
+            cfg.FACE_BATCH_SIZE,
+            cfg.CHANNELS,
+            (cfg.HEIGHT, cfg.WIDTH),
+            cfg.FRAMES_ORDER_MAGNITUDE,
             faces_only=True
     )
 
-    frames_to_predict = prepare_frames(feature_extractor)
+    frames_to_predict = prepare_frames(feature_extractor, cfg)
     predictions = rnn_model.predict(frames_to_predict)
 
     return predictions

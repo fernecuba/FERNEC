@@ -1,22 +1,35 @@
-import os
+import yaml
 import uvicorn
 from fastapi import FastAPI
 from fernec.predict import router as predict_router
 from manage.get_state import router as state_router
+from fernec.video_predictor import VideoConfig
 from contextlib import asynccontextmanager
 from keras.models import Sequential, load_model
 from keras.src.saving import serialization_lib
+from pydantic import BaseModel
+from ipaddress import IPv4Address, IPv6Address
 
-# Needed to load model
+# Needed to load models
 serialization_lib.enable_unsafe_deserialization()
 
-def gen_init():
+class AppConfig(BaseModel):
+    host: IPv4Address | IPv6Address = IPv4Address("127.0.0.1")
+    port: int = 8080
+    cnn_path: str
+    rnn_path: str
+    video_config: VideoConfig
+
+def parse_config(path: str) -> AppConfig:
+    with open(path, "r") as file:
+        config = yaml.safe_load(file)
+    return AppConfig(**config)
+
+def gen_init(cfg: AppConfig):
     async def initialize_models(app: FastAPI):
         print('Loading models')
-        model_cnn_path = os.getenv('MODEL_CNN_PATH', './fernec/ia_models/cotatest.keras')
-        model_rnn_path = os.getenv('MODEL_RNN_PATH', './fernec/ia_models/cotatest_rnn_4.keras')
         # Load CNN
-        app.state.cnn_model = load_model(model_cnn_path)
+        app.state.cnn_model = load_model(cfg.cnn_path)
         print('CNN loaded... OK')
         # Load feature extractor
         model_e = Sequential()
@@ -25,7 +38,8 @@ def gen_init():
         app.state.feature_extractor = model_e
         print('Feature extractor loaded... OK')
         # Load RNN
-        app.state.rnn_model = load_model(model_rnn_path)
+        app.state.rnn_model = load_model(cfg.rnn_path)
+        app.state.video_config = cfg.video_config
         print('RNN loaded... OK')
         yield
         del app.state.cnn_model
@@ -35,9 +49,8 @@ def gen_init():
     return asynccontextmanager(initialize_models)
 
 
-def get_application() -> FastAPI:
-    application = FastAPI(lifespan=gen_init())
-
+def get_application(cfg: AppConfig) -> FastAPI:
+    application = FastAPI(lifespan=gen_init(cfg))
     # Add routers
     application.include_router(predict_router)
     application.include_router(state_router)
@@ -46,9 +59,9 @@ def get_application() -> FastAPI:
 
 # TODO: Set a logger
 if __name__ == "__main__":
-    app = get_application()
+    cfg = parse_config("./config.yaml")
+    app = get_application(cfg)
+    if app is None:
+        raise TypeError("app not instantiated")
     print('Starting FERNEC backend')
-    port = 8000
-    if os.getenv("PORT"):
-        port = int(os.getenv("PORT"))
-    uvicorn.run(app, host='0.0.0.0', port=port)
+    uvicorn.run(app, host=str(cfg.host), port=cfg.port)
