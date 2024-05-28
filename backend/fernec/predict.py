@@ -4,7 +4,6 @@ import base64
 import numpy as np
 
 from PIL import Image
-from starlette.responses import JSONResponse
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 
