@@ -11,7 +11,7 @@ export const uploadVideo = ({
   const formData = new FormData();
 
   formData.append("video_file", video, `${fileName}.${fileType}`);
-  return fetch("http://localhost:8000/predict/video", {
+  return fetch("/predict/video", {
     method: "POST",
     body: formData,
   });
