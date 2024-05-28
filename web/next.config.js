@@ -9,23 +9,23 @@ const nextConfig = {
       {
         source: "/api/:path*",
         destination:
-          process.env.NODE_ENV === "development"
+          process.env.NODE_ENV === "development" && !process.env.BACK_URL
             ? "http://127.0.0.1:8000/:path*"
-            : "/api/",
+            : `${process.env.BACK_URL}/:path*`,
       },
       {
         source: "/docs",
         destination:
-          process.env.NODE_ENV === "development"
+          process.env.NODE_ENV === "development" && !process.env.BACK_URL
             ? "http://127.0.0.1:8000/docs"
-            : "/api/docs",
+            : `${process.env.BACK_URL}/docs`,
       },
       {
         source: "/openapi.json",
         destination:
-          process.env.NODE_ENV === "development"
+          process.env.NODE_ENV === "development" && !process.env.BACK_URL
             ? "http://127.0.0.1:8000/openapi.json"
-            : "/api/openapi.json",
+            : `${process.env.BACK_URL}/openapi.json`,
       },
     ];
   },
