@@ -1,3 +1,5 @@
+
+import os
 import yaml
 import uvicorn
 from fastapi import FastAPI
@@ -59,7 +61,9 @@ def get_application(cfg: AppConfig) -> FastAPI:
 
 # TODO: Set a logger
 if __name__ == "__main__":
-    cfg = parse_config("./config.yaml")
+    config_path = os.getenv("CONFIG_FILE") if os.getenv("CONFIG_FILE") else "./config.yaml"
+    print(f"Use config file: {config_path}")
+    cfg = parse_config(config_path)
     app = get_application(cfg)
     if app is None:
         raise TypeError("app not instantiated")
