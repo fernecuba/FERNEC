@@ -2,6 +2,7 @@
 fernec/ia_models/
 models/
 #ignore videos
+temp_video*
 *.mp4
 
 #ignore temp folder

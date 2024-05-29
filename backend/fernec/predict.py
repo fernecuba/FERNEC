@@ -1,3 +1,4 @@
+import os
 import io
 import uuid
 import base64
@@ -62,10 +63,12 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
 
         video_file = form_data["video_file"]
 
+        video_format = os.path.splitext(video_file.filename)[-1].lower()
+
         contents = await video_file.read()
 
         # Save the video file temporarily
-        temp_video_path = "temp_video.mp4"
+        temp_video_path = "temp_video" + video_format
         with open(temp_video_path, "wb") as temp_video:
             temp_video.write(contents)
 
