@@ -7,3 +7,5 @@ temp_video*
 
 #ignore temp folder
 temp/
+
+#.env
