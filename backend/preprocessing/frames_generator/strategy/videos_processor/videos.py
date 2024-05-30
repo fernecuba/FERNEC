@@ -11,24 +11,23 @@ from preprocessing.frames_generator.utils import clean_folder
 # TODO: move me into videos_processor?
 def get_frames_from_video(video_path, frames_path, batch_size, channels, thumbnail_size, frames_order_magnitude, faces_only=False):
     
-    if video_path.endswith('.webm'):
-        video_path = convert_video_to_mp4(video_path)
+    # if video_path.endswith('.webm'):
+    #     video_path = convert_video_to_mp4(video_path)
 
     cap = cv2.VideoCapture(video_path)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    #frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     raw_frames = []
     processed_count = 0
+    success, frame = cap.read()
 
-    for i in tqdm(range(frame_count), desc=f"Processing {frame_count} frames..."):
-        if i % 100 == 0:
-            gc.collect()
-
-        success, frame = cap.read()
-        if not success:
-            break
+    while success:
+        # if i % 100 == 0:
+        #     gc.collect()
+        # if not success:
+        #     break
 
         raw_frames.append(frame)
-        if (len(raw_frames) == batch_size) or (i == frame_count - 1):
+        if (len(raw_frames) == batch_size):
             boxes = detect_faces(raw_frames, faces_only=faces_only)
             for j, (frame, box) in enumerate(zip(raw_frames, boxes)):
                 if box is not None:
@@ -38,7 +37,10 @@ def get_frames_from_video(video_path, frames_path, batch_size, channels, thumbna
                     processed_count += 1
             raw_frames = []
 
+        success, frame = cap.read()
+
     cap.release()
+    print(f"Processed {processed_count} frames")
     return processed_count
 
 def convert_video_to_mp4(input_path):
