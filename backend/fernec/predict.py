@@ -1,16 +1,15 @@
+import os
 import io
 import uuid
 import base64
 import numpy as np
 
 from PIL import Image
-from starlette.responses import JSONResponse
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 
 from fernec.models import ImageItem, ImagePrediction, VideoPrediction
 from fernec.video_predictor import predict_video, count_frames_per_emotion
-from fernec.ia_models import cnn_model, rnn_model
 
 
 router = APIRouter(prefix="/predict")
@@ -19,7 +18,7 @@ router = APIRouter(prefix="/predict")
 predictions = {}
 
 @router.post('/image')
-async def predict_image(image_item: ImageItem) -> ImagePrediction:
+async def predict_image(request: Request, image_item: ImageItem) -> ImagePrediction:
     try:
         # Decodificar la imagen Base64
         image_data = base64.b64decode(image_item.image_base64)
@@ -33,7 +32,7 @@ async def predict_image(image_item: ImageItem) -> ImagePrediction:
         # TO DO: cut face from image
 
         # Realizar la predicción utilizando el modelo cargado
-        predictions = model.predict(image).tolist()[0]
+        predictions = request.app.state.cnn_model.predict(image).tolist()[0]
         prediction_class = np.argmax(predictions)
         emociones = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
         return JSONResponse(status_code=200, content={
@@ -64,15 +63,20 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
 
         video_file = form_data["video_file"]
 
+        video_format = os.path.splitext(video_file.filename)[-1].lower()
+
         contents = await video_file.read()
 
         # Save the video file temporarily
-        temp_video_path = "temp_video.mp4"
+        temp_video_path = "temp_video" + video_format
         with open(temp_video_path, "wb") as temp_video:
             temp_video.write(contents)
 
         unique_id = str(uuid.uuid4())
-        background_tasks.add_task(predict_video_async, temp_video_path, cnn_model, rnn_model, unique_id)
+        feature_extractor = request.app.state.feature_extractor
+        rnn =  request.app.state.rnn_model
+        cfg = request.app.state.video_config
+        background_tasks.add_task(predict_video_async, temp_video_path, feature_extractor, rnn, unique_id, cfg)
         # i.e. prediction is calculating
         predictions[unique_id] = None
         return JSONResponse(status_code=202, content={"uuid": unique_id})
@@ -81,8 +85,8 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def predict_video_async(temp_video_path, cnn_model, rnn_model, unique_id):
-    prediction = predict_video(temp_video_path, cnn_model, rnn_model)
+def predict_video_async(temp_video_path, cnn_model, rnn_model, unique_id, video_config):
+    prediction = predict_video(temp_video_path, cnn_model, rnn_model, video_config)
     result = count_frames_per_emotion(prediction)
     predictions[unique_id] = result
     print(f"prediction is done for unique_id {unique_id}")

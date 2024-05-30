@@ -1,8 +1,8 @@
 build:
-	docker-compose build
+	docker compose build
 
 start:
-	docker-compose up
+	docker compose up
 
 destroy:
-	docker-compose down
+	docker compose down

@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Trash2, FileUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { uploadVideo } from "@/lib/actions";
+import Questions from "./Questions";
 
 const RecordingPulse = ({ className }: { className?: string }) => (
   <span className={cn("relative flex h-4 w-4", className)}>
@@ -13,7 +15,7 @@ const RecordingPulse = ({ className }: { className?: string }) => (
   </span>
 );
 
-export default function Record() {
+export default function RecordVideo({ className }: { className?: string }) {
   const {
     createRecording,
     openCamera,
@@ -53,18 +55,13 @@ export default function Record() {
       alert("No video to upload");
       return;
     }
-    // Upload the blob to a back-end
-    const formData = new FormData();
 
-    formData.append(
-      "video_file",
-      recorded.blob,
-      `${recorded.fileName}.${recorded.fileType}`
-    );
-    const response = await fetch("/api/predict/video", {
-      method: "POST",
-      body: formData,
+    const response = await uploadVideo({
+      video: recorded.blob,
+      fileName: recorded.fileName,
+      fileType: recorded.fileType,
     });
+
     toast({
       description: response.ok ? "File upload" : "Error uploading file",
       variant: response.ok ? "default" : "destructive",
@@ -80,8 +77,8 @@ export default function Record() {
   if (!recording) return null;
 
   return (
-    <main className="flex h-screen flex-col p-24">
-      <div className="h-full container flex flex-row p-0 space-x-2">
+    <main className={cn("flex flex-col", className)}>
+      <div className="h-full flex flex-row p-0 space-x-2">
         <div className="w-3/4 h-full flex flex-col border-2 bg-gray-200 rounded-lg">
           <div className="flex flex-1 relative" key={recording.id}>
             {recording.status === "RECORDING" && (
@@ -147,7 +144,9 @@ export default function Record() {
             )}
           </div>
         </div>
-        <div className="flex-1 border-2 rounded-lg bg-gray-200 gap-2"></div>
+        <div className="flex-1 border-2 rounded-lg bg-gray-200 gap-2">
+          <Questions />
+        </div>
       </div>
     </main>
   );

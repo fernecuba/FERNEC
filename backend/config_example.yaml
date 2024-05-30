@@ -1,0 +1,12 @@
+host: 0.0.0.0
+port: 8000
+cnn_path: "./cotatest.keras"
+rnn_path: "./cotatest_rnn_4.keras"
+video_config:
+  HEIGHT: 112
+  WIDTH: 112
+  CHANNELS: 3
+  MAX_SEQ_LENGTH: 10
+  NUM_FEATURES: 1024
+  FRAMES_ORDER_MAGNITUDE: 5
+  FACE_BATCH_SIZE: 20
