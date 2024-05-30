@@ -20,6 +20,7 @@ services:
       dockerfile: Dockerfile
     environment:
       PORT: 3000
+      BACK_URL: "http://backend:8000"
     ports:
       - "3000:3000"
     networks:
