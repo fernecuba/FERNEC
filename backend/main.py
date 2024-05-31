@@ -21,6 +21,7 @@ class AppConfig(BaseModel):
     port: int = 8080
     cnn_path: str
     rnn_path: str
+    rnn_binary_path: str
     video_config: VideoConfig
 
 def parse_config(path: str) -> AppConfig:
@@ -44,6 +45,8 @@ def gen_init(cfg: AppConfig):
         app.state.rnn_model = load_model(cfg.rnn_path)
         app.state.video_config = cfg.video_config
         print('RNN loaded... OK')
+        app.state.rnn_binary_model = load_model(cfg.rnn_binary_path)
+        print('RNN Binary loaded... OK')
         yield
         del app.state.cnn_model
         del app.state.feature_extractor
