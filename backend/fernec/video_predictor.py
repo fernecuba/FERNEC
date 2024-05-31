@@ -60,7 +60,7 @@ def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
     return [frames_features, frames_mask]
 
 
-def predict_video(video_path, feature_extractor, rnn_model, cfg: VideoConfig):
+def predict_video(video_path, feature_extractor, rnn_model, rnn_binary_model, cfg: VideoConfig):
 
     create_folder_if_not_exists(TMP_FRAMES_READY_PATH)
     clean_folder(TMP_FRAMES_READY_PATH)
@@ -77,8 +77,9 @@ def predict_video(video_path, feature_extractor, rnn_model, cfg: VideoConfig):
 
     frames_to_predict = prepare_frames(feature_extractor, cfg)
     predictions = rnn_model.predict(frames_to_predict)
+    predictions_binary = rnn_binary_model.predict(frames_to_predict)
 
-    return predictions
+    return [predictions, predictions_binary]
 
 
 # We are not going to use this one to return the predictions in the endpoint for now.
@@ -115,7 +116,7 @@ def print_prediction(predictions):
     return results
 
 
-def count_frames_per_emotion(predictions):
+def count_frames_per_emotion(predictions, predictions_binary):
     """
     Counts the number of frames per emotion in the given predictions.
 
@@ -136,6 +137,20 @@ def count_frames_per_emotion(predictions):
             }
     """
     class_vocab = ["Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"]
+    class_vocab_binary = ["Negative", "Positive"]
+
+    total_frames, emotions_list = calculate_emotion_counts(predictions, class_vocab)
+    total_frames_binary, emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary)
+
+    result = {
+        "total_frames": total_frames,
+        "emotions": emotions_list,
+        "emotion_binary": emotions_list_binary,
+    }
+
+    return result
+
+def calculate_emotion_counts(predictions, class_vocab):
     emotion_counts = {emotion: 0 for emotion in class_vocab}
 
     len_files = len(os.listdir(TMP_FRAMES_READY_PATH))
@@ -153,10 +168,4 @@ def count_frames_per_emotion(predictions):
 
     total_frames = sum(emotion_counts.values())
     emotions_list = [{"label": emotion, "total_frames": count} for emotion, count in emotion_counts.items()]
-
-    result = {
-        "total_frames": total_frames,
-        "emotions": emotions_list
-    }
-
-    return result
+    return total_frames,emotions_list

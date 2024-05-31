@@ -75,8 +75,9 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
         unique_id = str(uuid.uuid4())
         feature_extractor = request.app.state.feature_extractor
         rnn =  request.app.state.rnn_model
+        rnn_binary = request.app.state.rnn_binary_model
         cfg = request.app.state.video_config
-        background_tasks.add_task(predict_video_async, temp_video_path, feature_extractor, rnn, unique_id, cfg)
+        background_tasks.add_task(predict_video_async, temp_video_path, feature_extractor, rnn, rnn_binary, unique_id, cfg)
         # i.e. prediction is calculating
         predictions[unique_id] = None
         return JSONResponse(status_code=202, content={"uuid": unique_id})
@@ -85,8 +86,8 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def predict_video_async(temp_video_path, cnn_model, rnn_model, unique_id, video_config):
-    prediction = predict_video(temp_video_path, cnn_model, rnn_model, video_config)
-    result = count_frames_per_emotion(prediction)
+def predict_video_async(temp_video_path, cnn_model, rnn_model, rnn_binary_model, unique_id, video_config):
+    prediction, prediction_binary = predict_video(temp_video_path, cnn_model, rnn_model, rnn_binary_model, video_config)
+    result = count_frames_per_emotion(prediction, prediction_binary)
     predictions[unique_id] = result
     print(f"prediction is done for unique_id {unique_id}")
