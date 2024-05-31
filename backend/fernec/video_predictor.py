@@ -139,8 +139,10 @@ def count_frames_per_emotion(predictions, predictions_binary):
     class_vocab = ["Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"]
     class_vocab_binary = ["Negative", "Positive"]
 
-    total_frames, emotions_list = calculate_emotion_counts(predictions, class_vocab)
-    _, emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary)
+    emotions_list = calculate_emotion_counts(predictions, class_vocab)
+    emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary)
+
+    total_frames = sum([emotion["total_frames"] for emotion in emotions_list])
 
     result = {
         "total_frames": total_frames,
@@ -166,6 +168,5 @@ def calculate_emotion_counts(predictions, class_vocab):
                 emotion_counts[result_label] += 1
             i += 1
 
-    total_frames = sum(emotion_counts.values())
     emotions_list = [{"label": emotion, "total_frames": count} for emotion, count in emotion_counts.items()]
-    return total_frames, emotions_list
+    return emotions_list
