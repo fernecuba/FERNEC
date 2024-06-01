@@ -2,7 +2,8 @@ host: 0.0.0.0
 port: 8000
 cnn_path: "./cotatest.keras"
 rnn_path: "./cotatest_rnn_4.keras"
-rnn_binary_path: "./eche_rnn_binary_4.keras"
+cnn_path: "./vgg16_eche_4.keras"
+rnn_binary_path: "./eche_rnn_binary_3.keras"
 video_config:
   HEIGHT: 112
   WIDTH: 112
