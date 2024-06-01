@@ -1,5 +1,5 @@
 #ignore models
-fernec/ia_models/
+routers/ia_models/
 models/
 #ignore videos
 temp_video*

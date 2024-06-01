@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Request
-from shared.models import StatusResponse
+from .models import StatusResponse
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 router = APIRouter()
+
 
 @router.get("/health")
 def healthcheck() -> StatusResponse:

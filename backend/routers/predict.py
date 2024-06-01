@@ -8,8 +8,8 @@ from PIL import Image
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 
-from fernec.models import ImageItem, ImagePrediction, VideoPrediction
-from fernec.video_predictor import predict_video, count_frames_per_emotion
+from .models import ImageItem, ImagePrediction, VideoPrediction
+from .video_predictor import predict_video, count_frames_per_emotion
 
 
 router = APIRouter(prefix="/predict")
@@ -17,8 +17,9 @@ router = APIRouter(prefix="/predict")
 # TODO: this is good enough only for 1 worker
 predictions = {}
 
+
 @router.post('/image')
-async def predict_image(request: Request, image_item: ImageItem) -> ImagePrediction:
+async def predict_image(request: Request, image_item: ImageItem) -> JSONResponse:
     try:
         # Decodificar la imagen Base64
         image_data = base64.b64decode(image_item.image_base64)
@@ -32,8 +33,8 @@ async def predict_image(request: Request, image_item: ImageItem) -> ImagePredict
         # TO DO: cut face from image
 
         # Realizar la predicción utilizando el modelo cargado
-        predictions = request.app.state.cnn_model.predict(image).tolist()[0]
-        prediction_class = np.argmax(predictions)
+        predictions_result = request.app.state.cnn_model.predict(image).tolist()[0]
+        prediction_class = np.argmax(predictions_result)
         emociones = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
         return JSONResponse(status_code=200, content={
             "predictions": predictions,
