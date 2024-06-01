@@ -20,6 +20,7 @@ class AppConfig(BaseModel):
     port: int = 8080
     cnn_path: str
     rnn_path: str
+    cnn_binary_path: str
     rnn_binary_path: str
     video_config: VideoConfig
 
@@ -46,8 +47,20 @@ def gen_init(cfg: AppConfig):
         app.state.rnn_model = load_model(cfg.rnn_path)
         app.state.video_config = cfg.video_config
         print('RNN loaded... OK')
+
+        # Binary
+        app.state.cnn_binary_model = load_model(cfg.cnn_binary_path)
+        print('CNN Binary loaded... OK')
+        # Load feature extractor
+        model_e_binary = Sequential()
+        for layer in app.state.cnn_binary_model.layers[:-1]: # go through until last layer
+            model_e_binary.add(layer)
+        app.state.feature_binary_extractor = model_e_binary
+        print('Feature extractor binary loaded... OK')
+
         app.state.rnn_binary_model = load_model(cfg.rnn_binary_path)
         print('RNN Binary loaded... OK')
+
         yield
         del app.state.cnn_model
         del app.state.feature_extractor

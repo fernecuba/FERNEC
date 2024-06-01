@@ -58,7 +58,7 @@ def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
     return [frames_features, frames_mask]
 
 
-def predict_video(video_path, feature_extractor, rnn_model, rnn_binary_model, cfg: VideoConfig):
+def predict_video(video_path, feature_extractor, rnn_model, feature_binary_extractor, rnn_binary_model, cfg: VideoConfig):
 
     create_folder_if_not_exists(TMP_FRAMES_READY_PATH)
     clean_folder(TMP_FRAMES_READY_PATH)
@@ -74,8 +74,10 @@ def predict_video(video_path, feature_extractor, rnn_model, rnn_binary_model, cf
     )
 
     frames_to_predict = prepare_frames(feature_extractor, cfg)
+    frames_to_predict_binary = prepare_frames(feature_binary_extractor, cfg)
+
     predictions = rnn_model.predict(frames_to_predict)
-    predictions_binary = rnn_binary_model.predict(frames_to_predict)
+    predictions_binary = rnn_binary_model.predict(frames_to_predict_binary)
 
     return [predictions, predictions_binary]
 
