@@ -12,6 +12,7 @@ TMP_FRAMES_PATH = "./temp/frames/"
 # In this path we will save the frames that are ready to be predicted
 TMP_FRAMES_READY_PATH = "temp/frames_ready/"
 
+
 class VideoConfig(BaseModel):
     MAX_SEQ_LENGTH: int
     FRAMES_ORDER_MAGNITUDE: int
@@ -21,8 +22,8 @@ class VideoConfig(BaseModel):
     NUM_FEATURES: int
     FACE_BATCH_SIZE: int
 
+
 def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
-    
     files = os.listdir(TMP_FRAMES_READY_PATH)
     iterations = math.ceil(len(files) / cfg.MAX_SEQ_LENGTH)
 
@@ -31,7 +32,6 @@ def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
 
     for iteration in range(0, iterations):
         idx = 0
-
         for i in range(0, cfg.MAX_SEQ_LENGTH):
             frame_path = TMP_FRAMES_READY_PATH + f"{str(i + (iteration * cfg.MAX_SEQ_LENGTH)).zfill(cfg.FRAMES_ORDER_MAGNITUDE)}.jpg"
 
@@ -39,7 +39,6 @@ def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
                 print("Leo: " + frame_path)
 
             if os.path.isfile(frame_path):
-                
                 frame = cv2.imread(frame_path)
                 img = np.reshape(frame, (cfg.HEIGHT, cfg.WIDTH, cfg.CHANNELS))
                 img = np.expand_dims(img, axis=0)
@@ -50,7 +49,6 @@ def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
                 frames_features[iteration, idx] = prediction[0]
                 
             else:
-                
                 if verbose:
                     print("File not found, filling mask")
                 frames_mask[iteration, idx] = 0
@@ -61,7 +59,6 @@ def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
 
 
 def predict_video(video_path, feature_extractor, rnn_model, cfg: VideoConfig):
-
     create_folder_if_not_exists(TMP_FRAMES_READY_PATH)
     clean_folder(TMP_FRAMES_READY_PATH)
 
