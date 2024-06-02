@@ -2,7 +2,7 @@ host: 0.0.0.0
 port: 8000
 cnn_path: "./cotatest.keras"
 rnn_path: "./cotatest_rnn_4.keras"
-cnn_path: "./vgg16_eche_4.keras"
+cnn_binary_path: "./vgg16_eche_4.keras"
 rnn_binary_path: "./eche_rnn_binary_3.keras"
 video_config:
   HEIGHT: 112
@@ -12,3 +12,8 @@ video_config:
   NUM_FEATURES: 1024
   FRAMES_ORDER_MAGNITUDE: 5
   FACE_BATCH_SIZE: 20
+email_config:
+  EMAIL_SENDER: "fernec.fiuba@gmail.com"
+  EMAIL_PASSWORD: "fake_password"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: 465

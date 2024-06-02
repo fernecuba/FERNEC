@@ -9,7 +9,8 @@ from ipaddress import IPv4Address, IPv6Address
 
 from routers.predict import router as predict_router
 from routers.health import router as state_router
-from routers.video_predictor import VideoConfig
+from routers.messaging import router as messaging_router
+from routers.models import VideoConfig, EmailConfig
 
 # Needed to load models
 serialization_lib.enable_unsafe_deserialization()
@@ -23,6 +24,7 @@ class AppConfig(BaseModel):
     cnn_binary_path: str
     rnn_binary_path: str
     video_config: VideoConfig
+    email_config: EmailConfig
 
 
 def parse_config(path: str) -> AppConfig:
@@ -45,7 +47,6 @@ def gen_init(cfg: AppConfig):
         print('Feature extractor loaded... OK')
         # Load RNN
         app.state.rnn_model = load_model(cfg.rnn_path)
-        app.state.video_config = cfg.video_config
         print('RNN loaded... OK')
 
         # Binary
@@ -60,6 +61,9 @@ def gen_init(cfg: AppConfig):
 
         app.state.rnn_binary_model = load_model(cfg.rnn_binary_path)
         print('RNN Binary loaded... OK')
+
+        app.state.video_config = cfg.video_config
+        app.state.email_config = cfg.email_config
 
         yield
         del app.state.cnn_model
@@ -84,4 +88,5 @@ def get_application(cfg: AppConfig) -> FastAPI:
     # Add routers
     application.include_router(predict_router)
     application.include_router(state_router)
+    application.include_router(messaging_router)
     return application

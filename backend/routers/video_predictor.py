@@ -5,22 +5,12 @@ import numpy as np
 
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
-from pydantic import BaseModel
+from .models import VideoConfig
 
 # Temp path to save the frames extracted from the video
 TMP_FRAMES_PATH = "./temp/frames/"
 # In this path we will save the frames that are ready to be predicted
 TMP_FRAMES_READY_PATH = "temp/frames_ready/"
-
-
-class VideoConfig(BaseModel):
-    MAX_SEQ_LENGTH: int
-    FRAMES_ORDER_MAGNITUDE: int
-    HEIGHT: int
-    WIDTH: int
-    CHANNELS: int = 3
-    NUM_FEATURES: int
-    FACE_BATCH_SIZE: int
 
 
 def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
