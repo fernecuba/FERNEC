@@ -33,6 +33,7 @@ def _send_email(recipients: list[str], subject: str, body: str, email_config: Em
     msg['To'] = ', '.join(recipients)
     html_body = MIMEText(body, 'html')
     msg.attach(html_body)
+
     with smtplib.SMTP_SSL(smtp_host, smtp_port) as smtp_server:
         smtp_server.login(sender, password)
         smtp_server.sendmail(sender, recipients, msg.as_string())
