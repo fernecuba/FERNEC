@@ -2,7 +2,7 @@ import os
 import cv2
 import math
 import numpy as np
-
+from loguru import logger
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 from pydantic import BaseModel
@@ -23,7 +23,7 @@ class VideoConfig(BaseModel):
     FACE_BATCH_SIZE: int
 
 
-def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
+def prepare_frames(feature_extractor, cfg: VideoConfig):
     files = os.listdir(TMP_FRAMES_READY_PATH)
     iterations = math.ceil(len(files) / cfg.MAX_SEQ_LENGTH)
 
@@ -34,9 +34,7 @@ def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
         idx = 0
         for i in range(0, cfg.MAX_SEQ_LENGTH):
             frame_path = TMP_FRAMES_READY_PATH + f"{str(i + (iteration * cfg.MAX_SEQ_LENGTH)).zfill(cfg.FRAMES_ORDER_MAGNITUDE)}.jpg"
-
-            if verbose:
-                print("Leo: " + frame_path)
+            logger.debug("Leo: " + frame_path)
 
             if os.path.isfile(frame_path):
                 frame = cv2.imread(frame_path)
@@ -49,8 +47,8 @@ def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
                 frames_features[iteration, idx] = prediction[0]
                 
             else:
-                if verbose:
-                    print("File not found, filling mask")
+                
+                logger.debug("File not found, filling mask")
                 frames_mask[iteration, idx] = 0
                 
             idx += 1
@@ -96,7 +94,7 @@ def print_prediction(predictions):
     class_vocab = [
         "Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"
     ]
-    print(class_vocab)
+    logger.info(f"Vocabulary classes: {class_vocab}")
     results = []
 
     len_files = len(os.listdir(TMP_FRAMES_READY_PATH))

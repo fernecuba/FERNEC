@@ -4,7 +4,7 @@ import time
 import shutil
 import numpy as np
 import pandas as pd
-
+from loguru import logger
 from preprocessing.frames_generator.strategy.base_processor import BaseProcessor
 from preprocessing.frames_generator.strategy.images_processor.images import get_frames, pad_pixels, get_pixels, save_image
 from preprocessing.frames_generator.face_detector.detector import detect_faces
@@ -26,7 +26,7 @@ class ImagesProcessor(BaseProcessor, Configurable):
         if self.get("load_csv"):
             self.load_into_csv(df)
         if self.get("rearrange_by_labels"):
-            print(df.info())
+            logger.info(df.info())
             self.rearrange_files(df)
 
     def process_images(self, df):
@@ -37,8 +37,8 @@ class ImagesProcessor(BaseProcessor, Configurable):
             if i < len(processed_images_df):
                 continue
             start = time.time()
-            if self.get("verbose"):
-                print(f"About to process {i} dataset {len(df_split)} long")
+
+            logger.debug(f"About to process {i} dataset {len(df_split)} long")
 
             self.save_frames(df_split.copy())
 
@@ -49,8 +49,8 @@ class ImagesProcessor(BaseProcessor, Configurable):
                                        encoding="utf-8", index=False)
 
             elapsed_time = time.time() - start
-            if self.get("verbose"):
-                print(f"Processed {len(df_split)} in {(elapsed_time / 60):.2f} minutes")
+            
+            logger.debug(f"Processed {len(df_split)} in {(elapsed_time / 60):.2f} minutes")
 
             if self.get("is_test_mode"):
                 break
@@ -72,21 +72,20 @@ class ImagesProcessor(BaseProcessor, Configurable):
 
     def rearrange_files(self, df):
         start = time.time()
-        if self.get("verbose"):
-            print(f"About to process dataset {len(df)} long")
+        
+        logger.debug(f"About to process dataset {len(df)} long")
 
         source_folder = self.get("dataset_output_path")
         destination_folder = self.get("destination_folder")
-        print(f"source_folder is {source_folder}, destination_folder is {destination_folder}")
+        logger.info(f"source_folder is {source_folder}, destination_folder is {destination_folder}")
         failures = df.apply(
             lambda r: self.move_file(r["file_name"], r["labels_expression"],
                                      source_folder, destination_folder), axis=1)
         failed_files = [file_name for file_name in failures.unique() if file_name is not None]
 
         elapsed_time = time.time() - start
-        if self.get("verbose"):
-            print(f"Processed {len(df)} in {(elapsed_time / 60):.2f} minutes. Failed {len(failed_files)} files.")
-                  #f"They are: {failed_files}")
+        
+        logger.debug(f"Processed {len(df)} in {(elapsed_time / 60):.2f} minutes. Failed {len(failed_files)} files.")
 
     @staticmethod
     def move_file(file_name, labels_name, source_folder, destination_folder):
@@ -97,7 +96,7 @@ class ImagesProcessor(BaseProcessor, Configurable):
                 destination_folder + f"{labels_name}/{file_name}"
             )
         except Exception as e:
-            print(f"move_file failed: {e}")
+            logger.exception(f"move_file failed")
             return file_name
 
     def get_processed_images(self) -> pd.DataFrame():

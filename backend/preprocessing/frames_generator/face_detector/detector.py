@@ -1,8 +1,9 @@
 import torch
 from facenet_pytorch import MTCNN
+from loguru import logger
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-print('Running on device: {}'.format(device))
+logger.info('Running on device: {}'.format(device))
 
 
 detector = MTCNN(selection_method="largest", min_face_size=40)
