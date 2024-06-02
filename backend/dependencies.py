@@ -18,6 +18,7 @@ serialization_lib.enable_unsafe_deserialization()
 class AppConfig(BaseModel):
     host: IPv4Address | IPv6Address = IPv4Address("127.0.0.1")
     port: int = 8080
+    log_level: str | int = 'INFO'
     cnn_path: str
     rnn_path: str
     cnn_binary_path: str
