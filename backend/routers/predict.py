@@ -8,10 +8,9 @@ from PIL import Image
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 
-from .models import ImageItem, ImagePrediction, VideoPrediction, EmailConfig
+from .models import ImageItem
 from .video_predictor import predict_video, count_frames_per_emotion
 from .messaging import _send_email
-
 
 router = APIRouter(prefix="/predict")
 

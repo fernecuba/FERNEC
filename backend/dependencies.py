@@ -7,9 +7,7 @@ from keras.src.saving import serialization_lib
 from pydantic import BaseModel
 from ipaddress import IPv4Address, IPv6Address
 
-from routers.predict import router as predict_router
-from routers.health import router as state_router
-from routers.messaging import router as messaging_router
+from routers.main import v1_router
 from routers.models import VideoConfig, EmailConfig
 
 # Needed to load models
@@ -86,7 +84,5 @@ def get_application(cfg: AppConfig) -> FastAPI:
     )
 
     # Add routers
-    application.include_router(predict_router)
-    application.include_router(state_router)
-    application.include_router(messaging_router)
+    application.include_router(v1_router)
     return application
