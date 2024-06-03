@@ -103,6 +103,6 @@ def send_email_with_prediction_results(unique_id, request: Request):
     email_config = request.app.state.email_config
     print("about to send prediction results!")
     recipients = ["fernec.fiuba@gmail.com"]
-    url = f"http://localhost:8000/predict/{unique_id}"
+    url = f"http://localhost:8000/v1/predict/{unique_id}"
     body = f"<html><body>Hello. <a href='{url}'>Click here</a> to see your result!</body>"
     _send_email(recipients, "fernec results", body, email_config)
