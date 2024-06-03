@@ -11,7 +11,7 @@ export const uploadVideo = ({
   const formData = new FormData();
 
   formData.append("video_file", video, `${fileName}.${fileType}`);
-  return fetch("/predict/video", {
+  return fetch("/fernec/v1/predict/video", {
     method: "POST",
     body: formData,
   });

@@ -1,6 +1,7 @@
 import { BarChartEmotions } from "./BarChartEmotions";
 
-export default function Results() {
+export default function Results({ params }: { params: { data: string } }) {
+  console.log("data:", params.data, atob(params.data));
   return (
     <main className="flex h-screen flex-col">
       <div className="container bg-gray-200 ">
