@@ -2,7 +2,7 @@ import os
 import gc
 import time
 import pandas as pd
-
+from loguru import logger
 from preprocessing.frames_generator.strategy.base_processor import BaseProcessor
 from preprocessing.frames_generator.database_manager.mongodb_manager import MongoDBManager
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
@@ -33,17 +33,17 @@ class VideosProcessor(BaseProcessor, Configurable):
         """
         videos_processed = os.listdir(self.get("dataset_output_path"))
 
-        if self.get("verbose"):
-            print(f"Already processed {len(videos_processed)} files. {videos_processed}")
+        
+        logger.debug(f"Already processed {len(videos_processed)} files. {videos_processed}")
 
         for index, row in df.iterrows():
             if row["video_name"] in videos_processed:
-                print(f"Skipping {row['video_name']} video, already generated")
+                logger.info(f"Skipping {row['video_name']} video, already generated")
                 continue
             try:
                 self.save_frames(row)
             except Exception as e:
-                print(f"Error saving frames for {row['video_name']}: {e}")
+                logger.error(f"Error saving frames for {row['video_name']}: {e}")
 
             videos_processed.append(row["video_name"])
             if self.get("is_test_mode"):
@@ -51,8 +51,8 @@ class VideosProcessor(BaseProcessor, Configurable):
 
     def save_frames(self, row):
         start_time = time.time()
-        if self.get("verbose"):
-            print(f"About to process {row['video_name']} video")
+ 
+        logger.debug(f"About to process {row['video_name']} video")
 
         folder = self.get("dataset_output_path") + f"{row['video_name']}/"
         create_folder_if_not_exists(folder)
@@ -69,8 +69,8 @@ class VideosProcessor(BaseProcessor, Configurable):
         assert processed_count == len(os.listdir(folder))
 
         elapsed_time = time.time() - start_time
-        if self.get("verbose"):
-            print(f"Processed {processed_count} frames in {(elapsed_time / 60):.2f} minutes")
+  
+        logger.debug(f"Processed {processed_count} frames in {(elapsed_time / 60):.2f} minutes")
 
     def create_labels_file(self, labels_df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -89,18 +89,18 @@ class VideosProcessor(BaseProcessor, Configurable):
             labels_df = self.load_labels(f"{self.get('images_labels_path')}videos/{video_name}.csv")
             this_df = self.join_dataframes(images_df, labels_df, video_name)
 
-            if self.get("verbose"):
-                print(f"Video {video_name} was loaded with {len(this_df)}")
+           
+            logger.debug(f"Video {video_name} was loaded with {len(this_df)}")
             df = pd.concat([df, this_df], ignore_index=True)
 
             if self.get("is_test_mode"):
                 break
 
         pd.options.mode.chained_assignment = 'warn'
-        if self.get("verbose"):
-            print(f"Total frames in database {len(df)}")
+       
+        logger.debug(f"Total frames in database {len(df)}")
 
-        print(f"sort by {self.get('dataset_sort')} - df columns {df.columns.values}")
+        logger.info(f"sort by {self.get('dataset_sort')} - df columns {df.columns.values}")
         df.sort_values(by=self.get("dataset_sort"), ascending=True, inplace=True)
         df.to_csv(self.get("labels_output_path"), sep=',', encoding='utf-8', index=False)
         return df
@@ -119,8 +119,7 @@ class VideosProcessor(BaseProcessor, Configurable):
 
     def join_dataframes(self, df, other_df, video_name):
         if len(df) != len(other_df):
-            if self.get("verbose"):
-                print(f"Length mismatch for video {video_name}. Difference is {len(df) - len(other_df)}."
+            logger.debug(f"Length mismatch for video {video_name}. Difference is {len(df) - len(other_df)}."
                       f" First df is {len(df)}, second df is {len(other_df)}")
             df, other_df = self.fix_difference_in_dataframes(df, other_df)
 
@@ -149,8 +148,8 @@ class VideosProcessor(BaseProcessor, Configurable):
     def upload_to_database(self, df: pd.DataFrame):
         database_config = self.get('database_config')
         start_time = time.time()
-        if self.get("verbose"):
-            print(f"About to upload to uri '{database_config['uri']}',"
+
+        logger.debug(f"About to upload to uri '{database_config['uri']}',"
                   f" database '{database_config['database']}' "
                   f"and collection '{database_config['collection']}' "
                   f"{len(df)} documents.")
@@ -167,12 +166,12 @@ class VideosProcessor(BaseProcessor, Configurable):
         grouped = df.groupby("video_name")
         for group, frame in grouped:
             if group in processed_documents_df["video_name"].unique():
-                if self.get("verbose"):
-                    print(f"skipping {group}")
+               
+                logger.debug(f"skipping {group}")
                 continue
 
-            if self.get("verbose"):
-                print(f"processing group {group} - with length {len(frame)}")
+    
+            logger.debug(f"processing group {group} - with length {len(frame)}")
 
             uploaded_docs = self.upload_docs(frame, collection, database_manager)
 
@@ -182,10 +181,10 @@ class VideosProcessor(BaseProcessor, Configurable):
             processed_documents_df.to_csv(database_config["documents_stats_path"], sep=",",
                                           encoding="utf-8", index=False)
 
-            if self.get("verbose"):
+            if logger.level('DEBUG').no <= logger.level("INFO").no:
                 processed_groups_unique = processed_documents_df["video_name"].unique()
                 elapsed_time = time.time() - start_time
-                print(f"Processed {len(processed_groups_unique)} groups in {(elapsed_time / 60):.2f} minutes. "
+                logger.debug(f"Processed {len(processed_groups_unique)} groups in {(elapsed_time / 60):.2f} minutes. "
                       f"Groups: {processed_groups_unique}")
 
         database_manager.close()

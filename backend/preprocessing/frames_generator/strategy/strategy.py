@@ -1,15 +1,13 @@
 import pandas as pd
-
+from loguru import logger
 from videos_processor.processor import VideosProcessor
 from images_processor.processor import ImagesProcessor
 
 
 def run(config):
     processor = get_strategy(config)
-
     df = pd.read_csv(config["labels_path"], sep=",", encoding="utf-8")
-    if config["verbose"]:
-        print(f"Strategy {config['source']}: about to process {df.shape} dataframe")
+    logger.debug(f"Strategy {config['source']}: about to process {df.shape} dataframe")
     processor.process(df)
 
 
