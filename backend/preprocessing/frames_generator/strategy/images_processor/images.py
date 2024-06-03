@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+from loguru import logger
 from PIL import Image
 
 
@@ -16,7 +16,7 @@ def save_image(image, output_file_path):
     try:
         image.save(output_file_path)
     except Exception as e:
-        print(f"exception {e} with tuple {image}")
+        logger.error(f"exception {e} with tuple {image}")
         raise e
 
 
@@ -24,17 +24,16 @@ def should_convert_to_grayscale(shape):
     return len(shape) >= 3 and shape[2] == 1
 
 
-def crop_image(image, bounding_box, verbose=False):
+def crop_image(image, bounding_box):
     cropped_image = image.crop((bounding_box[0], bounding_box[1], bounding_box[2], bounding_box[3]))
-    if verbose:
-        print(cropped_image.size)
+   
+    logger.debug(cropped_image.size)
     return cropped_image
 
 
-def resize_image(image, new_size, verbose=False):
+def resize_image(image, new_size):
     resized = image.resize(new_size, Image.LANCZOS)
-    if verbose:
-        print(resized.size)
+    logger.debug(resized.size)
     return resized
 
 
@@ -57,7 +56,7 @@ def pad_pixels(pixels):
     return np.array([add_padding(p, max_shape) for p in pixels])
 
 
-def get_pixels(frame, box, channels, thumbnail_size=None, return_image=False, verbose=False):
+def get_pixels(frame, box, channels, thumbnail_size=None, return_image=False):
     # frame to image
     image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
     if channels == 1:
@@ -65,31 +64,31 @@ def get_pixels(frame, box, channels, thumbnail_size=None, return_image=False, ve
 
     # crop image to keep only face, if possible
     if len(box) != 0:
-        image = crop_image(image, box, verbose)
+        image = crop_image(image, box)
 
     # resize image to keep new size
     if thumbnail_size:
-        image = resize_image(image, thumbnail_size, verbose)
+        image = resize_image(image, thumbnail_size)
 
     shape = thumbnail_size + (channels, )
     # pixels = list(image.getdata())
     pixels = np.reshape(np.array(list(image.getdata())).flatten(), shape).tolist()
-    if verbose:
-        print(len(pixels))
+    
+    logger.debug(len(pixels))
     if return_image:
-        # print(f"about to return pixels and image: {pixels} - {image}")
+        logger.debug(f"about to return pixels and image: {pixels} - {image}")
         return pixels, image
-    # print(f"about to return pixels: {pixels}")
+    logger.debug(f"about to return pixels: {pixels}")
     return pixels
 
 
-def get_frames(filename, channels, thumbnail_size=None, verbose=False):
+def get_frames(filename, channels, thumbnail_size=None):
     img = Image.open(filename)
     if channels == 1:
         img = img.convert('L')
     if thumbnail_size:
         img.thumbnail(thumbnail_size, Image.LANCZOS)
-    if verbose:
-        print(f"image name {filename} - size {img.size}")
+    
+    logger.debug(f"image name {filename} - size {img.size}")
 
     return cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
