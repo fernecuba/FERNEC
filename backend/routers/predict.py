@@ -8,9 +8,9 @@ from PIL import Image
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 
-from .models import ImageItem, ImagePrediction, VideoPrediction
+from .models import ImageItem
 from .video_predictor import predict_video, count_frames_per_emotion
-
+from .messaging import _send_email
 
 router = APIRouter(prefix="/predict")
 
@@ -74,12 +74,8 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
             temp_video.write(contents)
 
         unique_id = str(uuid.uuid4())
-        feature_extractor = request.app.state.feature_extractor
-        rnn =  request.app.state.rnn_model
-        feature_extractor_binary = request.app.state.feature_binary_extractor
-        rnn_binary = request.app.state.rnn_binary_model
-        cfg = request.app.state.video_config
-        background_tasks.add_task(predict_video_async, temp_video_path, feature_extractor, rnn, feature_extractor_binary, rnn_binary, unique_id, cfg)
+        background_tasks.add_task(predict_video_async, temp_video_path, unique_id, request,
+                                  background_tasks)
         # i.e. prediction is calculating
         predictions[unique_id] = None
         return JSONResponse(status_code=202, content={"uuid": unique_id})
@@ -88,8 +84,25 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def predict_video_async(temp_video_path, cnn_model, rnn_model, cnn_binary_model, rnn_binary_model, unique_id, video_config):
-    prediction, prediction_binary = predict_video(temp_video_path, cnn_model, rnn_model, cnn_binary_model, rnn_binary_model, video_config)
+def predict_video_async(temp_video_path: str, unique_id: str, request: Request, background_tasks: BackgroundTasks):
+    feature_extractor = request.app.state.feature_extractor
+    rnn_model = request.app.state.rnn_model
+    feature_extractor_binary = request.app.state.feature_binary_extractor
+    rnn_binary_model = request.app.state.rnn_binary_model
+    video_config = request.app.state.video_config
+
+    prediction, prediction_binary = predict_video(temp_video_path, feature_extractor, rnn_model,
+                                                  feature_extractor_binary, rnn_binary_model, video_config)
     result = count_frames_per_emotion(prediction, prediction_binary)
     predictions[unique_id] = result
     logger.success(f"prediction is done for unique_id {unique_id}")
+    background_tasks.add_task(send_email_with_prediction_results, unique_id, request)
+
+
+def send_email_with_prediction_results(unique_id, request: Request):
+    email_config = request.app.state.email_config
+    print("about to send prediction results!")
+    recipients = ["fernec.fiuba@gmail.com"]
+    url = f"http://localhost:8000/v1/predict/{unique_id}"
+    body = f"<html><body>Hello. <a href='{url}'>Click here</a> to see your result!</body>"
+    _send_email(recipients, "fernec results", body, email_config)

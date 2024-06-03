@@ -5,22 +5,12 @@ import numpy as np
 from loguru import logger
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
-from pydantic import BaseModel
+from .models import VideoConfig
 
 # Temp path to save the frames extracted from the video
 TMP_FRAMES_PATH = "./temp/frames/"
 # In this path we will save the frames that are ready to be predicted
 TMP_FRAMES_READY_PATH = "temp/frames_ready/"
-
-
-class VideoConfig(BaseModel):
-    MAX_SEQ_LENGTH: int
-    FRAMES_ORDER_MAGNITUDE: int
-    HEIGHT: int
-    WIDTH: int
-    CHANNELS: int = 3
-    NUM_FEATURES: int
-    FACE_BATCH_SIZE: int
 
 
 def prepare_frames(feature_extractor, cfg: VideoConfig):
@@ -35,19 +25,16 @@ def prepare_frames(feature_extractor, cfg: VideoConfig):
         for i in range(0, cfg.MAX_SEQ_LENGTH):
             frame_path = TMP_FRAMES_READY_PATH + f"{str(i + (iteration * cfg.MAX_SEQ_LENGTH)).zfill(cfg.FRAMES_ORDER_MAGNITUDE)}.jpg"
             logger.debug("Leo: " + frame_path)
-
             if os.path.isfile(frame_path):
                 frame = cv2.imread(frame_path)
                 img = np.reshape(frame, (cfg.HEIGHT, cfg.WIDTH, cfg.CHANNELS))
                 img = np.expand_dims(img, axis=0)
-        
-                prediction = feature_extractor.predict(img, verbose=0) # shape (1, num_features)
+
+                # shape (1, num_features)
+                prediction = feature_extractor.predict(img, verbose=0)
                 assert len(prediction[0]) == cfg.NUM_FEATURES, 'Error features'
-        
                 frames_features[iteration, idx] = prediction[0]
-                
             else:
-                
                 logger.debug("File not found, filling mask")
                 frames_mask[iteration, idx] = 0
                 
@@ -153,6 +140,7 @@ def count_frames_per_emotion(predictions, predictions_binary):
     }
 
     return result
+
 
 def calculate_emotion_counts(predictions, class_vocab):
     emotion_counts = {emotion: 0 for emotion in class_vocab}

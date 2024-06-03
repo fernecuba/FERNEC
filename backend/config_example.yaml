@@ -13,3 +13,8 @@ video_config:
   NUM_FEATURES: 1024
   FRAMES_ORDER_MAGNITUDE: 5
   FACE_BATCH_SIZE: 20
+email_config:
+  EMAIL_SENDER: "fernec.fiuba@gmail.com"
+  EMAIL_PASSWORD: "fake_password"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: 465

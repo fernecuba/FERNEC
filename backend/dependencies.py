@@ -6,9 +6,10 @@ from keras.models import Sequential, load_model
 from keras.src.saving import serialization_lib
 from pydantic import BaseModel
 from ipaddress import IPv4Address, IPv6Address
+
+from routers.main import v1_router
+from routers.models import VideoConfig, EmailConfig
 from loguru import logger
-from routers.predict import router as predict_router
-from routers.health import router as state_router
 from routers.video_predictor import VideoConfig
 
 # Needed to load models
@@ -24,6 +25,7 @@ class AppConfig(BaseModel):
     cnn_binary_path: str
     rnn_binary_path: str
     video_config: VideoConfig
+    email_config: EmailConfig
 
 
 def parse_config(path: str) -> AppConfig:
@@ -46,7 +48,6 @@ def gen_init(cfg: AppConfig):
         logger.info('Feature extractor loaded... OK')
         # Load RNN
         app.state.rnn_model = load_model(cfg.rnn_path)
-        app.state.video_config = cfg.video_config
         logger.info('RNN loaded... OK')
 
         # Binary
@@ -61,6 +62,9 @@ def gen_init(cfg: AppConfig):
 
         app.state.rnn_binary_model = load_model(cfg.rnn_binary_path)
         logger.info('RNN Binary loaded... OK')
+
+        app.state.video_config = cfg.video_config
+        app.state.email_config = cfg.email_config
 
         yield
         del app.state.cnn_model
@@ -83,6 +87,5 @@ def get_application(cfg: AppConfig) -> FastAPI:
     )
 
     # Add routers
-    application.include_router(predict_router)
-    application.include_router(state_router)
+    application.include_router(v1_router)
     return application
