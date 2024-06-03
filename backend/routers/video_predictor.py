@@ -2,10 +2,7 @@ import os
 import cv2
 import math
 import numpy as np
-<<<<<<< HEAD
-=======
 from loguru import logger
->>>>>>> main
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 from .models import VideoConfig
