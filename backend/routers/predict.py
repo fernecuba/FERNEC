@@ -3,7 +3,8 @@ import io
 import uuid
 import base64
 import numpy as np
-
+import json
+from loguru import logger
 from PIL import Image
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
@@ -83,6 +84,9 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def hash_results(results):
+    res = json.dumps(results)
+    return base64.b64encode(res.encode("utf-8"))
 
 def predict_video_async(temp_video_path: str, unique_id: str, request: Request, background_tasks: BackgroundTasks):
     feature_extractor = request.app.state.feature_extractor
@@ -95,13 +99,13 @@ def predict_video_async(temp_video_path: str, unique_id: str, request: Request, 
                                                   feature_extractor_binary, rnn_binary_model, video_config)
     result = count_frames_per_emotion(prediction, prediction_binary)
     predictions[unique_id] = result
-    print(f"prediction is done for unique_id {unique_id}")
+    logger.info(f"Prediction is done for unique_id {unique_id}")
+    logger.info(f"Results: {hash_results(result)}")
     background_tasks.add_task(send_email_with_prediction_results, unique_id, request)
-
 
 def send_email_with_prediction_results(unique_id, request: Request):
     email_config = request.app.state.email_config
-    print("about to send prediction results!")
+    logger.info("about to send prediction results!", request.client.host)
     recipients = ["fernec.fiuba@gmail.com"]
     url = f"http://localhost:8000/v1/predict/{unique_id}"
     body = f"<html><body>Hello. <a href='{url}'>Click here</a> to see your result!</body>"
