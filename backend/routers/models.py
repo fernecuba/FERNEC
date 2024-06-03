@@ -1,6 +1,8 @@
+import datetime
 from typing import Generic, Optional, TypeVar
 from pydantic import BaseModel
 from pydantic.generics import GenericModel
+from sqlmodel import SQLModel
 
 DataT = TypeVar("DataT")
 
@@ -20,8 +22,13 @@ class ImagePrediction(BaseModel):
     emotion: str
 
 
-class VideoPrediction(BaseModel):
-    prediction: list[str]
+class Prediction(BaseModel, SQLModel):
+    id: int
+    uuid4: str
+    predictions: dict
+    status: str
+    updated_at: datetime.datetime
+    created_at: datetime.datetime
 
 
 class VideoConfig(BaseModel):

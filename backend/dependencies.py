@@ -6,9 +6,12 @@ from keras.models import Sequential, load_model
 from keras.src.saving import serialization_lib
 from pydantic import BaseModel
 from ipaddress import IPv4Address, IPv6Address
+from sqlalchemy import Engine
+from sqlmodel import Session, select
 
 from routers.main import v1_router
 from routers.models import VideoConfig, EmailConfig
+from routers.database.db import get_db_engine
 
 # Needed to load models
 serialization_lib.enable_unsafe_deserialization()
@@ -21,6 +24,7 @@ class AppConfig(BaseModel):
     rnn_path: str
     cnn_binary_path: str
     rnn_binary_path: str
+    db_uri: str
     video_config: VideoConfig
     email_config: EmailConfig
 
@@ -29,6 +33,16 @@ def parse_config(path: str) -> AppConfig:
     with open(path, "r") as file:
         config = yaml.safe_load(file)
     return AppConfig(**config)
+
+
+def init_db(db_engine: Engine) -> None:
+    try:
+        with Session(db_engine) as session:
+            # Try to create session to check if DB is awake
+            session.exec(select(1))
+    except Exception as e:
+        print(f"error initializing db {e}")
+        raise e
 
 
 def gen_init(cfg: AppConfig):
@@ -62,6 +76,8 @@ def gen_init(cfg: AppConfig):
 
         app.state.video_config = cfg.video_config
         app.state.email_config = cfg.email_config
+
+        init_db(get_db_engine(cfg.db_uri))
 
         yield
         del app.state.cnn_model

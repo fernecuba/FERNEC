@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from .models import ImageItem
 from .video_predictor import predict_video, count_frames_per_emotion
 from .messaging import _send_email
+from .database.predictions import create_prediction
 
 router = APIRouter(prefix="/predict")
 
@@ -78,6 +79,7 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
                                   background_tasks)
         # i.e. prediction is calculating
         predictions[unique_id] = None
+        create_prediction(unique_id)
         return JSONResponse(status_code=202, content={"uuid": unique_id})
         
     except Exception as e:
@@ -95,6 +97,7 @@ def predict_video_async(temp_video_path: str, unique_id: str, request: Request, 
                                                   feature_extractor_binary, rnn_binary_model, video_config)
     result = count_frames_per_emotion(prediction, prediction_binary)
     predictions[unique_id] = result
+    create_prediction()
     print(f"prediction is done for unique_id {unique_id}")
     background_tasks.add_task(send_email_with_prediction_results, unique_id, request)
 

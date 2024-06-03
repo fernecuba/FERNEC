@@ -12,3 +12,5 @@ opencv-python==4.9.0.80
 facenet-pytorch==2.5.3
 python-multipart==0.0.9
 PyYAML==6.0.1
+SQLAlchemy==2.0.30
+sqlmodel==0.0.18
