@@ -3,7 +3,7 @@ import io
 import uuid
 import base64
 import numpy as np
-
+from loguru import logger
 from PIL import Image
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
@@ -95,7 +95,7 @@ def predict_video_async(temp_video_path: str, unique_id: str, request: Request, 
                                                   feature_extractor_binary, rnn_binary_model, video_config)
     result = count_frames_per_emotion(prediction, prediction_binary)
     predictions[unique_id] = result
-    print(f"prediction is done for unique_id {unique_id}")
+    logger.success(f"prediction is done for unique_id {unique_id}")
     background_tasks.add_task(send_email_with_prediction_results, unique_id, request)
 
 

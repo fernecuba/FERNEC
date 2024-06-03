@@ -2,7 +2,7 @@ import os
 import cv2
 import math
 import numpy as np
-
+from loguru import logger
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 from .models import VideoConfig
@@ -13,7 +13,7 @@ TMP_FRAMES_PATH = "./temp/frames/"
 TMP_FRAMES_READY_PATH = "temp/frames_ready/"
 
 
-def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
+def prepare_frames(feature_extractor, cfg: VideoConfig):
     files = os.listdir(TMP_FRAMES_READY_PATH)
     iterations = math.ceil(len(files) / cfg.MAX_SEQ_LENGTH)
 
@@ -24,23 +24,18 @@ def prepare_frames(feature_extractor, cfg: VideoConfig, verbose=False):
         idx = 0
         for i in range(0, cfg.MAX_SEQ_LENGTH):
             frame_path = TMP_FRAMES_READY_PATH + f"{str(i + (iteration * cfg.MAX_SEQ_LENGTH)).zfill(cfg.FRAMES_ORDER_MAGNITUDE)}.jpg"
-
-            if verbose:
-                print("Leo: " + frame_path)
-
+            logger.debug("Leo: " + frame_path)
             if os.path.isfile(frame_path):
                 frame = cv2.imread(frame_path)
                 img = np.reshape(frame, (cfg.HEIGHT, cfg.WIDTH, cfg.CHANNELS))
                 img = np.expand_dims(img, axis=0)
-        
-                prediction = feature_extractor.predict(img, verbose=0) # shape (1, num_features)
+
+                # shape (1, num_features)
+                prediction = feature_extractor.predict(img, verbose=0)
                 assert len(prediction[0]) == cfg.NUM_FEATURES, 'Error features'
-        
                 frames_features[iteration, idx] = prediction[0]
-                
             else:
-                if verbose:
-                    print("File not found, filling mask")
+                logger.debug("File not found, filling mask")
                 frames_mask[iteration, idx] = 0
                 
             idx += 1
@@ -86,7 +81,7 @@ def print_prediction(predictions):
     class_vocab = [
         "Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"
     ]
-    print(class_vocab)
+    logger.info(f"Vocabulary classes: {class_vocab}")
     results = []
 
     len_files = len(os.listdir(TMP_FRAMES_READY_PATH))
@@ -145,6 +140,7 @@ def count_frames_per_emotion(predictions, predictions_binary):
     }
 
     return result
+
 
 def calculate_emotion_counts(predictions, class_vocab):
     emotion_counts = {emotion: 0 for emotion in class_vocab}

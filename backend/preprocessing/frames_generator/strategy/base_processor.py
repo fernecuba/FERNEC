@@ -4,7 +4,7 @@ import time
 import math
 import numpy as np
 import pandas as pd
-
+from loguru import logger
 from tqdm import tqdm
 
 from preprocessing.frames_generator.strategy.images_processor.images import open_image
@@ -49,8 +49,8 @@ class BaseProcessor(Configurable):
         start_process = time.time()
         files_processed = [file for file in os.listdir(self.get("output_path") + self.get("temp_path"))
                            if ".csv" in file and "~lock." not in file]
-        if self.get("verbose"):
-            print(f"Already processed {len(files_processed)} files. {files_processed}")
+        
+        logger.debug(f"Already processed {len(files_processed)} files. {files_processed}")
 
         # TODO: test me. Can i use chunks_generator here? Can I use self.get("batch_size")?
         # df_splitted = chunks_generator(df, self.get("array_split"))
@@ -66,12 +66,12 @@ class BaseProcessor(Configurable):
         processed = self.join_results()
 
         elapsed_time = time.time() - start_process
-        print(f"Processed {processed} in {(elapsed_time / 60):.2f} minutes")
+        logger.info(f"Processed {processed} in {(elapsed_time / 60):.2f} minutes")
 
     def save_dataframe(self, df_split: pd.DataFrame, i: int):
         start = time.time()
-        if self.get("verbose"):
-            print(f"About to process {i} dataset {len(df_split)} long")
+        
+        logger.debug(f"About to process {i} dataset {len(df_split)} long")
 
         shape = self.get("thumbnail_size") + (self.get("channels"),)
         frames = df_split.apply(
@@ -84,8 +84,8 @@ class BaseProcessor(Configurable):
                         sep=',', encoding='utf-8', header=set_header, index=False)
 
         elapsed_time = time.time() - start
-        if self.get("verbose"):
-            print(f"Processed {len(df_split)} in {(elapsed_time / 60):.2f} minutes")
+        
+        logger.debug(f"Processed {len(df_split)} in {(elapsed_time / 60):.2f} minutes")
         del df_split
         del frames
         gc.collect()
@@ -97,8 +97,8 @@ class BaseProcessor(Configurable):
 
         counter = 0
         for i in range(self.get("array_split")):
-            if self.get("verbose"):
-                print(f"About to write file {i} - lines already written {counter}")
+         
+            logger.debug(f"About to write file {i} - lines already written {counter}")
             with open(self.get("output_path") + self.get("temp_path") + f"{self.get('dataset')}_{i}.csv",
                       "rt") as read_file:
                 with open(output_file_path, "a") as write_file:

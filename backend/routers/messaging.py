@@ -5,6 +5,7 @@ from http.client import responses
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from loguru import logger
 
 from .models import Email, EmailConfig
 
@@ -37,4 +38,4 @@ def _send_email(recipients: list[str], subject: str, body: str, email_config: Em
     with smtplib.SMTP_SSL(smtp_host, smtp_port) as smtp_server:
         smtp_server.login(sender, password)
         smtp_server.sendmail(sender, recipients, msg.as_string())
-    print("Message sent!")
+    logger.success("Message sent!")
