@@ -61,11 +61,11 @@ async def predict_video_endpoint(
 ) -> JSONResponse:
     try:
         # Verify there is a file in the request
-        logger.info(f"client: {request.url} {request.headers.get('origin')}")
         form_data = await request.form()
         if "video_file" not in form_data:
             return JSONResponse(content={"message": "Couldn't find video file"}, status_code=400)
 
+        user_email = str(form_data['email'])
         video_file = form_data["video_file"]
 
         video_format = os.path.splitext(video_file.filename)[-1].lower()
@@ -78,7 +78,7 @@ async def predict_video_endpoint(
             temp_video.write(contents)
 
         unique_id = str(uuid.uuid4())
-        background_tasks.add_task(predict_video_async, temp_video_path, unique_id, request,
+        background_tasks.add_task(predict_video_async, temp_video_path, unique_id, user_email, request,
                                   background_tasks)
         # i.e. prediction is calculating
         predictions[unique_id] = None
@@ -91,7 +91,7 @@ def encode_results(results):
     res = json.dumps(results)
     return base64.b64encode(res.encode("utf-8")).decode("utf-8")
 
-def predict_video_async(temp_video_path: str, unique_id: str, request: Request, background_tasks: BackgroundTasks):
+def predict_video_async(temp_video_path: str, unique_id: str, user_email: str | None,  request: Request, background_tasks: BackgroundTasks):
     feature_extractor = request.app.state.feature_extractor
     rnn_model = request.app.state.rnn_model
     feature_extractor_binary = request.app.state.feature_binary_extractor
@@ -104,12 +104,13 @@ def predict_video_async(temp_video_path: str, unique_id: str, request: Request, 
     result = count_frames_per_emotion(prediction, prediction_binary)
     predictions[unique_id] = result
     logger.success(f"Prediction is done for unique_id {unique_id}")
-    background_tasks.add_task(send_email_with_prediction_results, result, request)
+    if(user_email):
+        background_tasks.add_task(send_email_with_prediction_results, result, user_email, request)
 
-def send_email_with_prediction_results(result, request: Request):
+def send_email_with_prediction_results(result, user_email: str, request: Request):
     email_config = request.app.state.email_config
     logger.info("about to send prediction results!", request.client.host)
-    recipients = ["fernec.fiuba@gmail.com"]
+    recipients = [user_email]
     result_encoded = encode_results(result)
     logger.debug(f"Results hashed: {result_encoded}")
     url = f"{request.headers.get('origin')}/results/{result_encoded}"
