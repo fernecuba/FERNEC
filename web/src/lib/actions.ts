@@ -1,8 +1,10 @@
 export const uploadVideo = ({
+  email,
   video,
   fileName,
   fileType,
 }: {
+  email: string;
   video: Blob;
   fileName: string;
   fileType: string;
