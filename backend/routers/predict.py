@@ -8,7 +8,6 @@ from loguru import logger
 from PIL import Image
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
-
 from .models import ImageItem
 from .video_predictor import predict_video, count_frames_per_emotion
 from .messaging import _send_email
@@ -56,9 +55,13 @@ def get_predictions(prediction_id: str) -> JSONResponse:
 
 
 @router.post('/video')
-async def predict_video_endpoint(request: Request, background_tasks: BackgroundTasks) -> JSONResponse:
+async def predict_video_endpoint(
+    request: Request, 
+    background_tasks: BackgroundTasks
+) -> JSONResponse:
     try:
         # Verify there is a file in the request
+        logger.info(f"client: {request.url} {request.headers.get('origin')}")
         form_data = await request.form()
         if "video_file" not in form_data:
             return JSONResponse(content={"message": "Couldn't find video file"}, status_code=400)
@@ -84,9 +87,9 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def hash_results(results):
+def encode_results(results):
     res = json.dumps(results)
-    return base64.b64encode(res.encode("utf-8"))
+    return base64.b64encode(res.encode("utf-8")).decode("utf-8")
 
 def predict_video_async(temp_video_path: str, unique_id: str, request: Request, background_tasks: BackgroundTasks):
     feature_extractor = request.app.state.feature_extractor
@@ -94,20 +97,21 @@ def predict_video_async(temp_video_path: str, unique_id: str, request: Request, 
     feature_extractor_binary = request.app.state.feature_binary_extractor
     rnn_binary_model = request.app.state.rnn_binary_model
     video_config = request.app.state.video_config
-
+    logger.info('Prepearing frames')
     prediction, prediction_binary = predict_video(temp_video_path, feature_extractor, rnn_model,
                                                   feature_extractor_binary, rnn_binary_model, video_config)
+    logger.info('Counting frames')
     result = count_frames_per_emotion(prediction, prediction_binary)
     predictions[unique_id] = result
-    logger.info(f"Prediction is done for unique_id {unique_id}")
-    logger.info(f"Results: {hash_results(result)}")
-    logger.success(f"prediction is done for unique_id {unique_id}")
-    background_tasks.add_task(send_email_with_prediction_results, unique_id, request)
+    logger.success(f"Prediction is done for unique_id {unique_id}")
+    background_tasks.add_task(send_email_with_prediction_results, result, request)
 
-def send_email_with_prediction_results(unique_id, request: Request):
+def send_email_with_prediction_results(result, request: Request):
     email_config = request.app.state.email_config
     logger.info("about to send prediction results!", request.client.host)
     recipients = ["fernec.fiuba@gmail.com"]
-    url = f"http://localhost:8000/v1/predict/{unique_id}"
+    result_encoded = encode_results(result)
+    logger.debug(f"Results hashed: {result_encoded}")
+    url = f"{request.headers.get('origin')}/results/{result_encoded}"
     body = f"<html><body>Hello. <a href='{url}'>Click here</a> to see your result!</body>"
     _send_email(recipients, "fernec results", body, email_config)
