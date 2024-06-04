@@ -1,5 +1,6 @@
 import { BarChartEmotions } from "./BarChartEmotions";
 import { DonutChartBinary } from "./DonutChartBinary";
+import { TextInfo } from "./TextInfo";
 
 interface EmotionResult {
   label:
@@ -47,34 +48,7 @@ export default function Results({ params }: { params: { data: string } }) {
               <BarChartEmotions results={results} />
             </div>
             <div className="w-1/2 flex flex-col justify-around items-center">
-              <p className="font-bold">
-                Your video has {results.total_frames} frames long
-              </p>
-              <p className="font-bold">
-                for{" "}
-                {
-                  results.emotions.find((e) => e.label === "Happiness")
-                    ?.total_frames
-                }{" "}
-                frames you looked <span className="text-green-600">happy</span>
-              </p>
-              <p className="font-bold">
-                for{" "}
-                {
-                  results.emotions.find((e) => e.label === "Neutral")
-                    ?.total_frames
-                }{" "}
-                frames you looked <span className="text-blue-300">neutral</span>
-              </p>
-              <p className="font-bold">
-                for{" "}
-                {
-                  results.emotions.find((e) => e.label === "Surprise")
-                    ?.total_frames
-                }{" "}
-                frames you looked{" "}
-                <span className="text-yellow-600">surprised</span>
-              </p>
+              <TextInfo results={results} />
             </div>
           </div>
         </section>
