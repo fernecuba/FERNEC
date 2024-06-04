@@ -19,3 +19,6 @@ email_config:
   EMAIL_PASSWORD: "fake_password"
   SMTP_HOST: "smtp.gmail.com"
   SMTP_PORT: 465
+database_config:
+  DB_URL: ""
+  DB_KEY: ""

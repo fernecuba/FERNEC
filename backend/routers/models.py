@@ -22,7 +22,7 @@ class ImagePrediction(BaseModel):
     emotion: str
 
 
-class Prediction(BaseModel, SQLModel):
+class Prediction(SQLModel, BaseModel):
     id: int
     uuid4: str
     predictions: dict
@@ -48,7 +48,17 @@ class EmailConfig(BaseModel):
     SMTP_PORT: int
 
 
+class DatabaseConfig(BaseModel):
+    DB_URL: str
+    DB_KEY: str
+
+
 class Email(BaseModel):
     recipients: list[str]
     subject: str
     body: str
+
+
+PREDICTION_STATUS_PROCESSING = "processing"
+PREDICTION_STATUS_SUCCESS = "success"
+PREDICTION_STATUS_FAILURE = "failure"

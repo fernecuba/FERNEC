@@ -1,12 +1,25 @@
-from sqlmodel import Session
+from supabase import Client
 
-from ..models import Prediction
+# TODO: define dtos and return Prediction model
+# from ..models import Prediction
 
 
-def create_prediction(session: Session, unique_id: str, email: str):
-    prediction = Prediction(uuid4=unique_id, email=email, status="processing")
-    db_obj = Prediction.model_validate(prediction)
-    session.add(db_obj)
-    session.commit()
-    session.refresh(db_obj)
-    return db_obj
+def create_prediction(client: Client, unique_id: str, email: str):
+    data = (client.table("predictions").
+            insert({"uuid4": unique_id, "email": email, "status": "processing"}).
+            execute())
+    assert len(data.data) == 1
+    return data.data[0]
+
+
+def get_prediction(client: Client, unique_id: str):
+    data = client.table("predictions").select("*").eq("uuid4", unique_id).execute()
+    if len(data.data) == 0:
+        return None
+    return data.data[0]
+
+
+def update_prediction(client: Client, unique_id: str, prediction: dict):
+    data = client.table("predictions").update(prediction).eq("uuid4", unique_id).execute()
+    assert len(data.data) == 1
+    return data.data[0]
