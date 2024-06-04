@@ -1,44 +1,16 @@
 "use client";
 import { BarChart } from "@tremor/react";
-
-["Anger", "Disgust", "Fear", "Happiness", "Neutral", "Sadness", "Surprise"];
-const chartdata = [
-  {
-    name: "Anger",
-    "Emotion %": 5,
-  },
-  {
-    name: "Disgust",
-    "Emotion %": 10,
-  },
-  {
-    name: "Fear",
-    "Emotion %": 5,
-  },
-  {
-    name: "Happiness",
-    "Emotion %": 20,
-  },
-  {
-    name: "Neutral",
-    "Emotion %": 40,
-  },
-  {
-    name: "Sadness",
-    "Emotion %": 10,
-  },
-  {
-    name: "Surprise",
-    "Emotion %": 10,
-  },
-];
+import { EmotionResults } from "./page";
 
 const dataFormatter = (number: number) =>
   Intl.NumberFormat("us").format(number).toString();
 
-export const BarChartEmotions = () => (
+export const BarChartEmotions = ({ results }: { results: EmotionResults }) => (
   <BarChart
-    data={chartdata}
+    data={results.emotions.map((emotion) => ({
+      name: emotion.label,
+      "Emotion %": (emotion.total_frames / results.total_frames) * 100,
+    }))}
     index="name"
     categories={["Emotion %"]}
     colors={["blue"]}

@@ -1,7 +1,34 @@
 import { BarChartEmotions } from "./BarChartEmotions";
+import { DonutChartBinary } from "./DonutChartBinary";
+
+interface EmotionResult {
+  label:
+    | "Neutral"
+    | "Anger"
+    | "Disgust"
+    | "Fear"
+    | "Happiness"
+    | "Sadness"
+    | "Surprise";
+  total_frames: number;
+}
+
+interface BinaryEmotionResult {
+  label: "Negative" | "Positive";
+  total_frames: number;
+}
+
+export interface EmotionResults {
+  total_frames: number;
+  emotions: EmotionResult[];
+  emotions_binary: BinaryEmotionResult[];
+}
 
 export default function Results({ params }: { params: { data: string } }) {
-  console.log("data:", params.data, atob(params.data));
+  const results = JSON.parse(
+    atob(decodeURIComponent(params.data))
+  ) as EmotionResults;
+
   return (
     <main className="flex h-screen flex-col">
       <div className="container bg-gray-200 ">
@@ -9,26 +36,48 @@ export default function Results({ params }: { params: { data: string } }) {
           Here <span className="text-green-700"> are </span>your
           <span className="text-green-700"> Results</span>
         </h2>
-        <div className="pt-10 flex flex-row">
-          <div className="w-1/2">
-            <BarChartEmotions />
+        <section>
+          <div className="pt-10 flex flex-row">
+            <DonutChartBinary results={results} />
           </div>
-          <div className="w-1/2 flex flex-col justify-around pl-14">
-            <p className="font-bold">Your video has 60 seconds long</p>
-            <p className="font-bold">
-              for 20 seconds you looked{" "}
-              <span className="text-green-600">happy</span>
-            </p>
-            <p className="font-bold">
-              for 15 seconds you looked{" "}
-              <span className="text-blue-300">neutral</span>
-            </p>
-            <p className="font-bold">
-              for 10 seconds you looked{" "}
-              <span className="text-yellow-600">surprised</span>
-            </p>
+        </section>
+        <section>
+          <div className="pt-10 flex flex-row">
+            <div className="w-1/2">
+              <BarChartEmotions results={results} />
+            </div>
+            <div className="w-1/2 flex flex-col justify-around items-center">
+              <p className="font-bold">
+                Your video has {results.total_frames} frames long
+              </p>
+              <p className="font-bold">
+                for{" "}
+                {
+                  results.emotions.find((e) => e.label === "Happiness")
+                    ?.total_frames
+                }{" "}
+                frames you looked <span className="text-green-600">happy</span>
+              </p>
+              <p className="font-bold">
+                for{" "}
+                {
+                  results.emotions.find((e) => e.label === "Neutral")
+                    ?.total_frames
+                }{" "}
+                frames you looked <span className="text-blue-300">neutral</span>
+              </p>
+              <p className="font-bold">
+                for{" "}
+                {
+                  results.emotions.find((e) => e.label === "Surprise")
+                    ?.total_frames
+                }{" "}
+                frames you looked{" "}
+                <span className="text-yellow-600">surprised</span>
+              </p>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </main>
   );
