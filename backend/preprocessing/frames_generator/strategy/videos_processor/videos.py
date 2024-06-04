@@ -2,7 +2,7 @@ import gc
 import cv2
 import ffmpeg
 from tqdm import tqdm
-
+from loguru import logger
 from preprocessing.frames_generator.face_detector.detector import detect_faces
 from preprocessing.frames_generator.strategy.images_processor.images import get_pixels, save_image
 from preprocessing.frames_generator.utils import clean_folder
@@ -30,7 +30,7 @@ def get_frames_from_video(video_path, frames_path, batch_size, channels, thumbna
     if len(raw_frames) > 0:
         processed_count = detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_magnitude, faces_only, raw_frames, processed_count)
 
-    print(f"Processed {processed_count} frames")
+    logger.info(f"Processed {processed_count} frames")
     return processed_count
 
 

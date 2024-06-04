@@ -1,3 +1,4 @@
+import os
 import yaml
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,12 +7,12 @@ from keras.models import Sequential, load_model
 from keras.src.saving import serialization_lib
 from pydantic import BaseModel
 from ipaddress import IPv4Address, IPv6Address
-from sqlalchemy import Engine
-from sqlmodel import Session, select
+from supabase import create_client, Client
 
 from routers.main import v1_router
-from routers.models import VideoConfig, EmailConfig
+from routers.models import VideoConfig, EmailConfig, DatabaseConfig
 from routers.database.db import get_db_engine
+from loguru import logger
 
 # Needed to load models
 serialization_lib.enable_unsafe_deserialization()
@@ -20,6 +21,7 @@ serialization_lib.enable_unsafe_deserialization()
 class AppConfig(BaseModel):
     host: IPv4Address | IPv6Address = IPv4Address("127.0.0.1")
     port: int = 8080
+    log_level: str | int = 'INFO'
     cnn_path: str
     rnn_path: str
     cnn_binary_path: str
@@ -27,6 +29,7 @@ class AppConfig(BaseModel):
     db_uri: str
     video_config: VideoConfig
     email_config: EmailConfig
+    database_config: DatabaseConfig
 
 
 def parse_config(path: str) -> AppConfig:
@@ -35,49 +38,44 @@ def parse_config(path: str) -> AppConfig:
     return AppConfig(**config)
 
 
-def init_db(db_engine: Engine) -> None:
-    try:
-        with Session(db_engine) as session:
-            # Try to create session to check if DB is awake
-            session.exec(select(1))
-    except Exception as e:
-        print(f"error initializing db {e}")
-        raise e
+def init_db(cfg: DatabaseConfig) -> Client:
+    return create_client(cfg.DB_URL, cfg.DB_KEY)
 
 
 def gen_init(cfg: AppConfig):
     async def initialize_models(app: FastAPI):
-        print('Loading models')
+        logger.info('Loading models')
         # Load CNN
         app.state.cnn_model = load_model(cfg.cnn_path)
-        print('CNN loaded... OK')
+        logger.info('CNN loaded... OK')
         # Load feature extractor
         model_e = Sequential()
         for layer in app.state.cnn_model.layers[:-1]: # go through until last layer
             model_e.add(layer)
         app.state.feature_extractor = model_e
-        print('Feature extractor loaded... OK')
+        logger.info('Feature extractor loaded... OK')
         # Load RNN
         app.state.rnn_model = load_model(cfg.rnn_path)
-        print('RNN loaded... OK')
+        logger.info('RNN loaded... OK')
 
         # Binary
         app.state.cnn_binary_model = load_model(cfg.cnn_binary_path)
-        print('CNN Binary loaded... OK')
+        logger.info('CNN Binary loaded... OK')
         # Load feature extractor
         model_e_binary = Sequential()
         for layer in app.state.cnn_binary_model.layers[:-1]: # go through until last layer
             model_e_binary.add(layer)
         app.state.feature_binary_extractor = model_e_binary
-        print('Feature extractor binary loaded... OK')
+        logger.info('Feature extractor binary loaded... OK')
 
         app.state.rnn_binary_model = load_model(cfg.rnn_binary_path)
-        print('RNN Binary loaded... OK')
+        logger.info('RNN Binary loaded... OK')
 
         app.state.video_config = cfg.video_config
         app.state.email_config = cfg.email_config
 
-        init_db(get_db_engine(cfg.db_uri))
+        # init_db(get_db_engine(cfg.db_uri))
+        app.state.db_client = init_db(cfg.database_config)
 
         yield
         del app.state.cnn_model

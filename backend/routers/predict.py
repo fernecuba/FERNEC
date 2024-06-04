@@ -3,20 +3,18 @@ import io
 import uuid
 import base64
 import numpy as np
-
+from loguru import logger
 from PIL import Image
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 
-from .models import ImageItem
+from .models import ImageItem, PREDICTION_STATUS_PROCESSING, PREDICTION_STATUS_SUCCESS
 from .video_predictor import predict_video, count_frames_per_emotion
 from .messaging import _send_email
-from .database.predictions import create_prediction
+from .database.predictions import create_prediction, update_prediction, get_prediction as get_prediction_from_database
 
 router = APIRouter(prefix="/predict")
-
-# TODO: this is good enough only for 1 worker
-predictions = {}
 
 
 @router.post('/image')
@@ -38,7 +36,7 @@ async def predict_image(request: Request, image_item: ImageItem) -> JSONResponse
         prediction_class = np.argmax(predictions_result)
         emociones = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
         return JSONResponse(status_code=200, content={
-            "predictions": predictions,
+            "predictions": predictions_result,
             "emotion": emociones[prediction_class]
         })
     except Exception as e:
@@ -46,13 +44,17 @@ async def predict_image(request: Request, image_item: ImageItem) -> JSONResponse
 
 
 @router.get('/{prediction_id}')
-def get_predictions(prediction_id: str) -> JSONResponse:
-    if prediction_id not in predictions.keys():
-        return JSONResponse(content={"message": f"prediction with id {prediction_id} does not exist"}, status_code=404)
-    if predictions[prediction_id] is None:
+def get_predictions(request: Request, prediction_id: str) -> JSONResponse:
+    logger.info(f"about to get prediction with unique_id {prediction_id}")
+    prediction = get_prediction_from_database(request.app.state.db_client, prediction_id)
+    logger.info(f"prediction is {prediction}")
+    if prediction is None:
+        return JSONResponse(content={"message": f"prediction with id {prediction_id} does not exist"},
+                            status_code=404)
+    if prediction.get("status", "") == PREDICTION_STATUS_PROCESSING:
         return JSONResponse(content={"message": f"prediction with id {prediction_id} is not ready yet"},
                             status_code=202)
-    return JSONResponse(content=predictions[prediction_id], status_code=200)
+    return JSONResponse(content=jsonable_encoder(prediction), status_code=200)
 
 
 @router.post('/video')
@@ -78,9 +80,8 @@ async def predict_video_endpoint(request: Request, background_tasks: BackgroundT
         background_tasks.add_task(predict_video_async, temp_video_path, unique_id, request,
                                   background_tasks)
         # i.e. prediction is calculating
-        predictions[unique_id] = None
-        create_prediction(unique_id)
-        return JSONResponse(status_code=202, content={"uuid": unique_id})
+        prediction = create_prediction(request.app.state.db_client, unique_id, "fernec.fiuba@gmail.com")
+        return JSONResponse(status_code=202, content=jsonable_encoder(prediction))
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -93,12 +94,16 @@ def predict_video_async(temp_video_path: str, unique_id: str, request: Request, 
     rnn_binary_model = request.app.state.rnn_binary_model
     video_config = request.app.state.video_config
 
-    prediction, prediction_binary = predict_video(temp_video_path, feature_extractor, rnn_model,
-                                                  feature_extractor_binary, rnn_binary_model, video_config)
-    result = count_frames_per_emotion(prediction, prediction_binary)
-    predictions[unique_id] = result
-    create_prediction()
-    print(f"prediction is done for unique_id {unique_id}")
+    prediction_result, prediction_binary = predict_video(temp_video_path, feature_extractor, rnn_model,
+                                                         feature_extractor_binary, rnn_binary_model, video_config)
+    result = count_frames_per_emotion(prediction_result, prediction_binary)
+    prediction = get_prediction_from_database(request.app.state.db_client, unique_id)
+    prediction["predictions"] = result
+    prediction["status"] = PREDICTION_STATUS_SUCCESS
+    prediction = update_prediction(request.app.state.db_client, unique_id, prediction)
+    if prediction is None:
+        logger.error(f"error updating prediction, result is {prediction}")
+    logger.success(f"prediction is done for unique_id {unique_id}")
     background_tasks.add_task(send_email_with_prediction_results, unique_id, request)
 
 
