@@ -1,8 +1,10 @@
 export const uploadVideo = ({
+  email,
   video,
   fileName,
   fileType,
 }: {
+  email: string;
   video: Blob;
   fileName: string;
   fileType: string;
@@ -11,7 +13,8 @@ export const uploadVideo = ({
   const formData = new FormData();
 
   formData.append("video_file", video, `${fileName}.${fileType}`);
-  return fetch("/predict/video", {
+  formData.append("email", email);
+  return fetch("/fernec/v1/predict/video", {
     method: "POST",
     body: formData,
   });

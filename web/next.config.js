@@ -6,7 +6,7 @@ const nextConfig = {
     // web_server and api_server are on different machines.
     return [
       {
-        source: "/:path*",
+        source: "/fernec/:path*",
         destination:
           process.env.NODE_ENV === "development" && !process.env.BACK_URL
             ? "http://127.0.0.1:8000/:path*"

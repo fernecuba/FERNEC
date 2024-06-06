@@ -100,7 +100,6 @@ def print_prediction(predictions):
     
     return results
 
-
 def count_frames_per_emotion(predictions, predictions_binary):
     """
     Counts the number of frames per emotion in the given predictions.
