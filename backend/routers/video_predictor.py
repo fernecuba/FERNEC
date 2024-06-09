@@ -3,6 +3,7 @@ import cv2
 import math
 import numpy as np
 from loguru import logger
+from collections import Counter
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 from .models import VideoConfig
@@ -100,12 +101,14 @@ def print_prediction(predictions):
     
     return results
 
-def count_frames_per_emotion(predictions, predictions_binary):
+def count_frames_per_emotion(predictions, predictions_binary, video_config):
     """
     Counts the number of frames per emotion in the given predictions.
 
     Args:
         predictions (list): A list of predictions, where each prediction is a list of emotion probabilities.
+        predictions_binary (list): A list of binary predictions, where each prediction is a list of binary emotion probabilities.
+        sequence_length (int): The length of each sequence.
 
     Returns:
         dict: A dictionary containing the total number of frames and a list of emotions with their respective frame counts.
@@ -117,18 +120,32 @@ def count_frames_per_emotion(predictions, predictions_binary):
                     {"label": "Anger", "total_frames": 10},
                     {"label": "Disgust", "total_frames": 5},
                     ...
-                ]
+                ],
                 "emotions_binary": [
                     {"label": "Negative", "total_frames": 30},
                     {"label": "Positive", "total_frames": 70}
+                ],
+                "emotions_sequence": [
+                    {"label": "Neutral", "total_frames": 2},
+                    {"label": "Anger", "total_frames": 1},
+                    ...
+                ],
+                "emotions_binary_sequence": [
+                    {"label": "Negative", "total_frames": 1},
+                    {"label": "Positive", "total_frames": 2}
                 ]
             }
     """
     class_vocab = ["Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"]
     class_vocab_binary = ["Negative", "Positive"]
 
-    emotions_list = calculate_emotion_counts(predictions, class_vocab)
-    emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary)
+    # Calcula los conteos de emociones
+    emotions_list = calculate_emotion_counts(predictions, class_vocab, video_config)
+    emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary, video_config)
+
+    # Calcula los conteos de emociones por secuencia
+    emotions_sequence_list = calculate_emotion_counts(predictions, class_vocab, video_config , by_sequence=True)
+    emotions_binary_sequence_list = calculate_emotion_counts(predictions_binary, class_vocab_binary, video_config, by_sequence=True)
 
     total_frames = sum([emotion["total_frames"] for emotion in emotions_list])
 
@@ -136,26 +153,38 @@ def count_frames_per_emotion(predictions, predictions_binary):
         "total_frames": total_frames,
         "emotions": emotions_list,
         "emotions_binary": emotions_list_binary,
+        "emotions_sequence": emotions_sequence_list,
+        "emotions_binary_sequence": emotions_binary_sequence_list,
     }
 
     return result
 
 
-def calculate_emotion_counts(predictions, class_vocab):
+def calculate_emotion_counts(predictions, class_vocab, video_config, by_sequence=False):
     emotion_counts = {emotion: 0 for emotion in class_vocab}
-
     len_files = len(os.listdir(TMP_FRAMES_READY_PATH))
-    i = 0
 
-    for prediction in predictions:
-        for result in prediction:
-            result_argmax = np.argmax(result)
-            result_label = class_vocab[result_argmax]
-            
-            # TODO: We should find a better way to avoid the masked results.
-            if i < len_files:
-                emotion_counts[result_label] += 1
-            i += 1
+    i = 0
+    
+    if by_sequence:
+        for prediction in predictions:
+            sequence_results = [np.argmax(result) for result in prediction]
+            majority_result = max(set(sequence_results), key=sequence_results.count)
+            result_label = class_vocab[majority_result]
+            emotion_counts[result_label] += 1
+            i += video_config.MAX_SEQ_LENGTH
+            if i >= len_files:
+                break
+    else:        
+        for prediction in predictions:
+            for result in prediction:
+                result_argmax = np.argmax(result)
+                result_label = class_vocab[result_argmax]
+                
+                # Evita los resultados enmascarados
+                if i < len_files:
+                    emotion_counts[result_label] += 1
+                i += 1
 
     emotions_list = [{"label": emotion, "total_frames": count} for emotion, count in emotion_counts.items()]
     return emotions_list

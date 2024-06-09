@@ -101,7 +101,7 @@ def predict_video_async(temp_video_path: str, unique_id: str, user_email: str | 
     prediction, prediction_binary = predict_video(temp_video_path, feature_extractor, rnn_model,
                                                   feature_extractor_binary, rnn_binary_model, video_config)
     logger.info('Counting frames')
-    result = count_frames_per_emotion(prediction, prediction_binary)
+    result = count_frames_per_emotion(prediction, prediction_binary, video_config)
     predictions[unique_id] = result
     logger.success(f"Prediction is done for unique_id {unique_id}")
     if(user_email):
