@@ -114,5 +114,24 @@ def send_email_with_prediction_results(result, user_email: str, request: Request
     result_encoded = encode_results(result)
     logger.debug(f"Results hashed: {result_encoded}")
     url = f"{request.headers.get('origin')}/results/{result_encoded}"
-    body = f"<html><body>Hello. <a href='{url}'>Click here</a> to see your result!</body>"
+      
+
+    body = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; color: #333;">
+                    <div style="text-align: center; padding: 20px;">
+                        <img src="cid:logo" alt="FERNEC Logo" style="width: 150px;">
+                    </div>
+                    <div style="margin: 20px; text-align: center;">
+                        <h2>Dear User,</h2>
+                        <p>We are pleased to inform you that your results are ready.</p>
+                        <p>Please click the link below to view them:</p>
+                        <a href="{url}" style="display: inline-block; padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px;">View Results</a>
+                        <p>Sincerely,<br>The FERNEC Team</p>
+                    </div>
+                </body>
+            </html>
+            """
+    
+    
     _send_email(recipients, "fernec results", body, email_config)
