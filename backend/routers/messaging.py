@@ -1,5 +1,6 @@
 import smtplib
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from http.client import responses
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
@@ -34,6 +35,11 @@ def _send_email(recipients: list[str], subject: str, body: str, email_config: Em
     msg['To'] = ', '.join(recipients)
     html_body = MIMEText(body, 'html')
     msg.attach(html_body)
+
+    with open("./resources/FERNEC.png", "rb") as img_file:
+        img = MIMEImage(img_file.read())
+        img.add_header("Content-ID", "<logo>")
+        msg.attach(img)
 
     with smtplib.SMTP_SSL(smtp_host, smtp_port) as smtp_server:
         smtp_server.login(sender, password)
