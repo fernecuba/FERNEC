@@ -10,19 +10,18 @@ from preprocessing.frames_generator.utils import clean_folder
 
 # TODO: move me into videos_processor?
 def get_frames_from_video(video_path, frames_path, batch_size, channels, thumbnail_size, frames_order_magnitude, faces_only=False):
-
     cap = cv2.VideoCapture(video_path)
     raw_frames = []
     processed_count = 0
     success, frame = cap.read()
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    logger.info(f'FPS del video: {fps}')
 
     while success:
-
         raw_frames.append(frame)
-        if (len(raw_frames) == batch_size):
+        if len(raw_frames) == batch_size:
             processed_count = detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_magnitude, faces_only, raw_frames, processed_count)
             raw_frames = []
-
         success, frame = cap.read()
 
     cap.release()
@@ -31,7 +30,7 @@ def get_frames_from_video(video_path, frames_path, batch_size, channels, thumbna
         processed_count = detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_magnitude, faces_only, raw_frames, processed_count)
 
     logger.info(f"Processed {processed_count} frames")
-    return processed_count
+    return processed_count, fps
 
 
 def detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_magnitude, faces_only, raw_frames, processed_count):
@@ -40,7 +39,11 @@ def detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_ma
         if box is not None:
             _, image = get_pixels(frame, box, channels, thumbnail_size, return_image=True)
             save_image(image, frames_path +
-                            f"{str(processed_count + 1).zfill(frames_order_magnitude)}.jpg")
+                       f"{str(processed_count + 1).zfill(frames_order_magnitude)}.jpg")
             processed_count += 1
 
     return processed_count
+
+
+def frames_to_seconds(frames, fps):
+    return round(frames / fps)
