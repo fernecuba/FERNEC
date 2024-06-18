@@ -64,6 +64,7 @@ def gen_init(cfg: AppConfig):
         logger.info('RNN Binary loaded... OK')
 
         app.state.video_config = cfg.video_config
+        app.state.models_names = [(cfg.cnn_path, cfg.rnn_path), (cfg.cnn_binary_path, cfg.rnn_binary_path)]
         app.state.email_config = cfg.email_config
 
         yield
