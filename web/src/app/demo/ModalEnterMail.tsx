@@ -1,5 +1,5 @@
 "use client";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Dialog, DialogPanel, TextInput } from "@tremor/react";
 import { RiCloseLine } from "@remixicon/react";
 
@@ -13,6 +13,11 @@ export default function ModalEnterMail({
   action: (email: string) => Promise<void>;
 }) {
   const [email, setEmail] = useState<string>("");
+  const [showInfo, openShowInfo] = useState(false);
+
+  useEffect(() => {
+    openShowInfo(false);
+  }, [isOpen]);
 
   return (
     <Dialog
@@ -32,32 +37,38 @@ export default function ModalEnterMail({
             <RiCloseLine className="h-5 w-5 shrink-0" aria-hidden={true} />
           </button>
         </div>
-        <form action="#" method="POST">
-          <h4 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            Your email
-          </h4>
-          <p className="mt-2 text-tremor-default leading-6 text-tremor-content dark:text-dark-tremor-content">
-            We will send the results to your email
-          </p>
-          <TextInput
-            name="user-email"
-            type="email"
-            className="mt-2"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button
-            type="submit"
-            disabled={!email}
-            className="mt-4 w-full whitespace-nowrap rounded-tremor-default bg-tremor-brand px-4 py-2 text-center text-tremor-default font-medium text-tremor-brand-inverted shadow-tremor-input hover:bg-tremor-brand-emphasis dark:bg-dark-tremor-brand dark:text-dark-tremor-brand-inverted dark:shadow-dark-tremor-input dark:hover:bg-dark-tremor-brand-emphasis"
-            onClick={(e) => {
-              e.preventDefault();
-              action(email).then(() => setIsOpen(false));
-            }}
-          >
-            Send Video
-          </button>
-        </form>
+        {!showInfo ? (
+          <form action="#" method="POST">
+            <h4 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+              Your email
+            </h4>
+            <p className="mt-2 text-tremor-default leading-6 text-tremor-content dark:text-dark-tremor-content">
+              We will send the results to your email
+            </p>
+            <TextInput
+              name="user-email"
+              type="email"
+              className="mt-2"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <button
+              type="submit"
+              disabled={!email}
+              className="mt-4 w-full whitespace-nowrap rounded-tremor-default bg-tremor-brand px-4 py-2 text-center text-tremor-default font-medium text-tremor-brand-inverted shadow-tremor-input hover:bg-tremor-brand-emphasis dark:bg-dark-tremor-brand dark:text-dark-tremor-brand-inverted dark:shadow-dark-tremor-input dark:hover:bg-dark-tremor-brand-emphasis"
+              onClick={(e) => {
+                e.preventDefault();
+                action(email).then(() => openShowInfo(true));
+              }}
+            >
+              Send Video
+            </button>
+          </form>
+        ) : (
+          <div>
+            <p className="font-bold">The results will be send to your email!</p>
+          </div>
+        )}
       </DialogPanel>
     </Dialog>
   );
