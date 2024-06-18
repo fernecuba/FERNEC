@@ -3,7 +3,7 @@ import { useRecordWebcam } from "react-record-webcam";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Trash2, FileUp } from "lucide-react";
+import { Trash2, FileUp, Volume2Icon, VolumeX } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { uploadVideo } from "@/lib/actions";
 import Questions from "./Questions";
@@ -29,6 +29,7 @@ export default function RecordVideo({ className }: { className?: string }) {
   } = useRecordWebcam();
   const { toast } = useToast();
   const [modal, openModal] = useState(false);
+  const [isMute, mute] = useState(false);
 
   const initCamera = async () => {
     createRecording().then((recording) => {
@@ -88,6 +89,22 @@ export default function RecordVideo({ className }: { className?: string }) {
               {recording.status === "RECORDING" && (
                 <RecordingPulse className="absolute top-2 left-2 z-10" />
               )}
+              {recording.status === "STOPPED" && isMute && (
+                <VolumeX
+                  className="absolute top-2 z-10 right-2"
+                  color="white"
+                  onClick={() => mute((m) => !m)}
+                  size={30}
+                />
+              )}
+              {recording.status === "STOPPED" && !isMute && (
+                <Volume2Icon
+                  className="absolute top-2 z-10 right-2"
+                  color="white"
+                  onClick={() => mute((m) => !m)}
+                  size={30}
+                />
+              )}
               <video
                 className={cn(
                   "rounded-lg absolute w-full h-full object-fill",
@@ -106,6 +123,7 @@ export default function RecordVideo({ className }: { className?: string }) {
                   recording.status === "STOPPED" ? "block" : "hidden"
                 )}
                 ref={recording.previewRef}
+                muted={isMute}
                 autoPlay
                 loop
               />
