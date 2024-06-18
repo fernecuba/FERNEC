@@ -66,7 +66,7 @@ export default function ModalEnterMail({
           </form>
         ) : (
           <div>
-            <p className="font-bold">The results will be send to your email!</p>
+            <p className="font-bold">The results will be sent to your email!</p>
           </div>
         )}
       </DialogPanel>
