@@ -26,13 +26,20 @@ export default function RecordVideo({ className }: { className?: string }) {
     download,
     activeRecordings,
     clearPreview,
-  } = useRecordWebcam();
+    applyRecordingOptions,
+  } = useRecordWebcam({
+    options: { fileType: 'mp4' },
+    mediaRecorderOptions: { mimeType: 'video/mp4' },
+  });
   const { toast } = useToast();
   const [modal, openModal] = useState(false);
 
   const initCamera = async () => {
     createRecording().then((recording) => {
-      if (recording) openCamera(recording.id);
+      if (recording) {
+        applyRecordingOptions(recording.id);
+        openCamera(recording.id);
+      }
     });
   };
 

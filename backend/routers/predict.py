@@ -74,6 +74,7 @@ async def predict_video_endpoint(
 
         # Save the video file temporarily
         temp_video_path = "temp_video" + video_format
+        logger.info(f"video_format is {video_format}")
         with open(temp_video_path, "wb") as temp_video:
             temp_video.write(contents)
 
