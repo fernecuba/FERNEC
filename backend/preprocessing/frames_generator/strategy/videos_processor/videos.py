@@ -46,4 +46,4 @@ def detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_ma
 
 
 def frames_to_seconds(frames, fps):
-    return round(frames / fps)
+    return int(frames // fps)
