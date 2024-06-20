@@ -47,7 +47,7 @@ export default function UploadVideo({ className }: { className?: string }) {
         <CardHeader>
           <CardTitle>Upload Interview</CardTitle>
           <CardDescription>
-            Select a video from your device to upload.
+            Select a video from your device to upload. Only MP4 files are accepted.
           </CardDescription>
         </CardHeader>
         <form onSubmit={onSubmit} className="flex-1 flex flex-col">
@@ -55,11 +55,17 @@ export default function UploadVideo({ className }: { className?: string }) {
             <input
               id="pickImage"
               type="file"
-              accept="video/mp4,video/x-m4v,video/*"
+              accept="video/mp4"
               className="hidden"
               onChange={(e) => {
                 if (e.target.files) {
-                  setSubmitFile(e.target.files[0]);
+                  const file = e.target.files[0];
+                  if (file.type !== "video/mp4") {
+                    alert("Only MP4 videos are accepted. Please select a valid file.");
+                    e.target.value = ''; // Clear the selected file
+                  } else {
+                    setSubmitFile(file);
+                  }
                 }
               }}
             />
