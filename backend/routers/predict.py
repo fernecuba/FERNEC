@@ -74,6 +74,7 @@ async def predict_video_endpoint(
 
         # Save the video file temporarily
         temp_video_path = "temp_video" + video_format
+        logger.info(f"video_format is {video_format}")
         with open(temp_video_path, "wb") as temp_video:
             temp_video.write(contents)
 
@@ -87,25 +88,31 @@ async def predict_video_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 def encode_results(results):
     res = json.dumps(results)
     return base64.b64encode(res.encode("utf-8")).decode("utf-8")
 
-def predict_video_async(temp_video_path: str, unique_id: str, user_email: str | None,  request: Request, background_tasks: BackgroundTasks):
+
+def predict_video_async(temp_video_path: str, unique_id: str, user_email: str | None,  request: Request,
+                        background_tasks: BackgroundTasks):
     feature_extractor = request.app.state.feature_extractor
     rnn_model = request.app.state.rnn_model
     feature_extractor_binary = request.app.state.feature_binary_extractor
     rnn_binary_model = request.app.state.rnn_binary_model
     video_config = request.app.state.video_config
     logger.info('Prepearing frames')
-    prediction, prediction_binary = predict_video(temp_video_path, feature_extractor, rnn_model,
-                                                  feature_extractor_binary, rnn_binary_model, video_config)
+    prediction, prediction_binary, fps = predict_video(temp_video_path, feature_extractor, rnn_model,
+                                                       feature_extractor_binary, rnn_binary_model, video_config)
+
     logger.info('Counting frames')
-    result = count_frames_per_emotion(prediction, prediction_binary)
+    result = count_frames_per_emotion(prediction, prediction_binary, fps)
+    logger.success(f"result is {result}")
     predictions[unique_id] = result
     logger.success(f"Prediction is done for unique_id {unique_id}")
-    if(user_email):
+    if user_email:
         background_tasks.add_task(send_email_with_prediction_results, result, user_email, request)
+
 
 def send_email_with_prediction_results(result, user_email: str, request: Request):
     email_config = request.app.state.email_config
@@ -114,8 +121,6 @@ def send_email_with_prediction_results(result, user_email: str, request: Request
     result_encoded = encode_results(result)
     logger.debug(f"Results hashed: {result_encoded}")
     url = f"{request.headers.get('origin')}/results/{result_encoded}"
-      
-
     body = f"""
             <html>
                 <body style="font-family: Arial, sans-serif; color: #333; font-size: 18px;">
@@ -132,6 +137,4 @@ def send_email_with_prediction_results(result, user_email: str, request: Request
                 </body>
             </html>
             """
-    
-    
     _send_email(recipients, "fernec results", body, email_config)
