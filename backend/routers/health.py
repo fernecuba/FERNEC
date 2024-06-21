@@ -13,5 +13,10 @@ def healthcheck() -> StatusResponse:
 
 @router.get('/config/video')
 def get_video_config(request: Request):
-    cfg = request.app.state.video_config
-    return JSONResponse(status_code=200, content=jsonable_encoder(cfg))
+    video_config = request.app.state.video_config
+    models = request.app.state.models_names 
+
+    return JSONResponse(status_code=200, content=jsonable_encoder({
+        "video_config": video_config,
+        "models": models
+    }))
