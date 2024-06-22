@@ -94,10 +94,6 @@ def count_frames_per_emotion(predictions, predictions_binary, fps):
                 ]
             }
     """
-
-    # emotions_list = calculate_emotion_counts(predictions, class_vocab, fps)
-    # emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary, fps)
-
     emotions_list, emotions_list_binary, total_frames = consolidate_results(predictions, predictions_binary, fps)
 
     result = {
@@ -120,6 +116,16 @@ def consolidate_results(predictions, predictions_binary, fps):
     # Total frames
     total_frames = sum([emotion["total_frames"] for emotion in emotions_list])
     total_frames_binary = sum([emotion["total_frames"] for emotion in emotions_list_binary])
+
+    raw_result = {
+        "total_frames": total_frames,
+        "total_seconds": frames_to_seconds(total_frames, fps),
+        "fps": fps,
+        "emotions": emotions_list,
+        "emotions_binary": emotions_list_binary,
+    }
+
+    logger.success(f"raw_result is: {raw_result}")
     
     # Calculate percentages
     percentage_negative_binary = next(emotion["total_frames"] for emotion in emotions_list_binary if emotion["label"] == "Negative") / total_frames_binary * 100
