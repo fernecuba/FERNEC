@@ -94,13 +94,11 @@ def count_frames_per_emotion(predictions, predictions_binary, fps):
                 ]
             }
     """
-    class_vocab = ["Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"]
-    class_vocab_binary = ["Negative", "Positive"]
 
-    emotions_list = calculate_emotion_counts(predictions, class_vocab, fps)
-    emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary, fps)
+    # emotions_list = calculate_emotion_counts(predictions, class_vocab, fps)
+    # emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary, fps)
 
-    total_frames = sum([emotion["total_frames"] for emotion in emotions_list])
+    emotions_list, emotions_list_binary, total_frames = consolidate_results(predictions, predictions_binary, fps)
 
     result = {
         "total_frames": total_frames,
@@ -111,6 +109,40 @@ def count_frames_per_emotion(predictions, predictions_binary, fps):
     }
 
     return result
+
+def consolidate_results(predictions, predictions_binary, fps):
+    class_vocab = ["Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"]
+    class_vocab_binary = ["Negative", "Positive"]
+
+    emotions_list = calculate_emotion_counts(predictions, class_vocab, fps)
+    emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary, fps)
+    
+    # Total frames
+    total_frames = sum([emotion["total_frames"] for emotion in emotions_list])
+    total_frames_binary = sum([emotion["total_frames"] for emotion in emotions_list_binary])
+    
+    # Calculate percentages
+    percentage_negative_binary = next(emotion["total_frames"] for emotion in emotions_list_binary if emotion["label"] == "Negative") / total_frames_binary * 100
+
+    # Determine the final result based on the binary model percentage
+    if percentage_negative_binary >= 60:
+        # Video is mostly negative
+        result_emotions = [emotion for emotion in emotions_list if emotion["label"] in ["Anger", "Disgust", "Fear", "Sadness", "Surprise"]]
+        result_emotions_binary = emotions_list_binary
+        total_frames = sum([emotion["total_frames"] for emotion in result_emotions_binary])
+    else:
+        # Translate 7-emotions results to binary results
+        result_emotions = emotions_list
+        negative_emotions = sum([emotion["total_frames"] for emotion in emotions_list if emotion["label"] in ["Anger", "Disgust", "Fear", "Sadness", "Surprise"]])
+        positive_emotions = sum([emotion["total_frames"] for emotion in emotions_list if emotion["label"] in ["Neutral", "Happiness"]])
+        total_frames = sum([emotion["total_frames"] for emotion in result_emotions])
+        
+        result_emotions_binary = [
+            {"label": "Negative", "total_frames": negative_emotions, "total_seconds": frames_to_seconds(negative_emotions, fps)},
+            {"label": "Positive", "total_frames": positive_emotions, "total_seconds": frames_to_seconds(positive_emotions, fps)}
+        ]
+
+    return result_emotions, result_emotions_binary, total_frames
 
 
 def calculate_emotion_counts(predictions, class_vocab, fps):
