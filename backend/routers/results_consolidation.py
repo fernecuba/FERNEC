@@ -20,16 +20,6 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
     total_frames = sum([emotion["total_frames"] for emotion in emotions_list])
     total_frames_binary = sum([emotion["total_frames"] for emotion in emotions_list_binary])
 
-    raw_result = {
-        "total_frames": total_frames,
-        "total_seconds": frames_to_seconds(total_frames, fps),
-        "fps": fps,
-        "emotions": emotions_list,
-        "emotions_binary": emotions_list_binary
-    }
-
-    logger.success(f"raw_result is: {raw_result}")
-
     # Calculate percentages
     percentage_negative_binary = next(emotion["total_frames"] for emotion in emotions_list_binary if emotion["label"]
                                       == "Negative") / total_frames_binary * 100
