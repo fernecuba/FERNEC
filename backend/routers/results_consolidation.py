@@ -25,7 +25,7 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
                                       == "Negative") / total_frames_binary * 100
 
     # Determine the final result based on the binary model percentage
-    if percentage_negative_binary >= binary_acceptance_threshold:
+    if binary_model_has_priority(binary_acceptance_threshold, percentage_negative_binary):
         # Video is mostly negative
         result_emotions = [emotion for emotion in emotions_list if emotion["label"] in NEGATIVE_EMOTIONS]
         result_emotions.extend([initialize_emotion_in_zero(emotion) for emotion in POSITIVE_EMOTIONS])
@@ -48,6 +48,9 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
         ]
 
     return result_emotions, result_emotions_binary, total_frames
+
+def binary_model_has_priority(binary_acceptance_threshold, percentage_negative_binary):
+    return percentage_negative_binary >= binary_acceptance_threshold
 
 
 def calculate_emotion_counts(predictions, class_vocab, frames_amount, fps, video_config):
