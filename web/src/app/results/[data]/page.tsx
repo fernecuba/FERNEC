@@ -47,7 +47,7 @@ export default function Results({ params }: { params: { data: string } }) {
     atob(decodeURIComponent(params.data))
   ) as EmotionResults;
 
-    // Filtrar los resultados donde total_sequences es distinto de 0
+  // Filtrar los resultados donde total_sequences es distinto de 0
   const nonZeroSequencesResults = filterEmotionResults(results);
 
   return (
@@ -73,6 +73,11 @@ export default function Results({ params }: { params: { data: string } }) {
           </div>
         </section>
       </div>
+      <div className="w-full flex justify-center items-end mt-4 mb-4">
+        <p className="text-md text-gray-600">
+          The presented results are based on automated analysis and may not be entirely accurate.
+        </p>
+      </div>
     </main>
-  );
+);
 }
