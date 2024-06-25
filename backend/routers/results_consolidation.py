@@ -38,6 +38,7 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
     if percentage_negative_binary >= binary_acceptance_threshold:
         # Video is mostly negative
         result_emotions = [emotion for emotion in emotions_list if emotion["label"] in NEGATIVE_EMOTIONS]
+        result_emotions.extend([initialize_emotion_in_zero(emotion) for emotion in POSITIVE_EMOTIONS])
         result_emotions_binary = emotions_list_binary
         total_frames = sum([emotion["total_frames"] for emotion in result_emotions_binary])
     else:
@@ -101,3 +102,11 @@ def reduce_results(results, emotions_included):
             reduced['total_sequences'] += emotion['total_sequences']
 
     return reduced
+
+
+def initialize_emotion_in_zero(emotion_label):
+    return {
+        'label': emotion_label,
+        'total_frames': 0,
+        'total_sequences': 0
+    }
