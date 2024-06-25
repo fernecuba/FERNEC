@@ -11,16 +11,29 @@ export const TextInfo = ({ results }: { results: EmotionResults }) => {
     Surprise: "text-yellow-600",
   };
 
+  const emotionDescriptions: { [key: string]: string } = {
+    Neutral: "neutral",
+    Anger: "angry",
+    Disgust: "disgusted",
+    Fear: "fearful",
+    Happiness: "happy",
+    Sadness: "sad",
+    Surprise: "surprised",
+  };
+
+  // Sort emotions by total_seconds in descending order
+  const sortedEmotions = results.emotions.sort((a, b) => b.total_seconds - a.total_seconds);
+
   return (
     <>
       <p className="font-bold">
         Your video is {results.total_seconds} seconds long
       </p>
-      {results.emotions.map((emotion) => (
+      {sortedEmotions.map((emotion) => (
         <p key={emotion.label} className="font-bold">
           for {emotion.total_seconds} seconds you looked{" "}
           <span className={emotionColors[emotion.label]}>
-            {emotion.label.toLowerCase()}
+            {emotionDescriptions[emotion.label]}
           </span>
         </p>
       ))}
