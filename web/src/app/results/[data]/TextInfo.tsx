@@ -18,7 +18,7 @@ export const TextInfo = ({ results }: { results: EmotionResults }) => {
       </p>
       {results.emotions.map((emotion) => (
         <p key={emotion.label} className="font-bold">
-          for {Math.ceil(emotion.total_frames / results.fps)} seconds you looked{" "}
+          for {emotion.total_seconds} seconds you looked{" "}
           <span className={emotionColors[emotion.label]}>
             {emotion.label.toLowerCase()}
           </span>

@@ -12,12 +12,14 @@ interface EmotionResult {
     | "Sadness"
     | "Surprise";
   total_frames: number;
+  total_seconds: number;
   total_sequences: number;
 }
 
 interface BinaryEmotionResult {
   label: "Negative" | "Positive";
   total_frames: number;
+  total_seconds: number;
   total_sequences: number;
 }
 
