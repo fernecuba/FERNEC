@@ -6,11 +6,14 @@ from loguru import logger
 from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video, frames_to_seconds
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 from .models import VideoConfig
+from .results_consolidation import consolidate_results
 
 # Temp path to save the frames extracted from the video
 TMP_FRAMES_PATH = "./temp/frames/"
 # In this path we will save the frames that are ready to be predicted
 TMP_FRAMES_READY_PATH = "temp/frames_ready/"
+
+BINARY_ACCEPTANCE_THRESHOLD = 60
 
 
 def prepare_frames(feature_extractor, cfg: VideoConfig):
@@ -68,7 +71,7 @@ def predict_video(video_path, feature_extractor, rnn_model, feature_binary_extra
     return [predictions, predictions_binary, fps]
 
 
-def count_frames_per_emotion(predictions, predictions_binary, fps):
+def count_frames_per_emotion(predictions, predictions_binary, fps, video_config):
     """
     Counts the number of frames per emotion in the given predictions.
 
@@ -94,13 +97,9 @@ def count_frames_per_emotion(predictions, predictions_binary, fps):
                 ]
             }
     """
-    class_vocab = ["Neutral", "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise"]
-    class_vocab_binary = ["Negative", "Positive"]
-
-    emotions_list = calculate_emotion_counts(predictions, class_vocab, fps)
-    emotions_list_binary = calculate_emotion_counts(predictions_binary, class_vocab_binary, fps)
-
-    total_frames = sum([emotion["total_frames"] for emotion in emotions_list])
+    emotions_list, emotions_list_binary, total_frames = consolidate_results(predictions, predictions_binary,
+                                                                            len(os.listdir(TMP_FRAMES_READY_PATH)), fps,
+                                                                            video_config, BINARY_ACCEPTANCE_THRESHOLD)
 
     result = {
         "total_frames": total_frames,
@@ -111,22 +110,3 @@ def count_frames_per_emotion(predictions, predictions_binary, fps):
     }
 
     return result
-
-
-def calculate_emotion_counts(predictions, class_vocab, fps):
-    emotion_counts = {emotion: 0 for emotion in class_vocab}
-    len_files = len(os.listdir(TMP_FRAMES_READY_PATH))
-    i = 0
-    for prediction in predictions:
-        for result in prediction:
-            result_argmax = np.argmax(result)
-            result_label = class_vocab[result_argmax]
-            
-            # TODO: We should find a better way to avoid the masked results.
-            if i < len_files:
-                emotion_counts[result_label] += 1
-            i += 1
-
-    emotions_list = [{"label": emotion, "total_frames": frames, "total_seconds": frames_to_seconds(frames, fps)}
-                     for emotion, frames in emotion_counts.items()]
-    return emotions_list
