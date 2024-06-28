@@ -103,13 +103,13 @@ def count_frames_per_emotion(predictions, predictions_binary, fps, video_config)
 
     result = {
         "total_frames": total_frames,
-        "total_seconds": frames_to_seconds(total_frames, fps),
+        "total_seconds": [sum(emotion.get('total_seconds', 0) for emotion in emotions_list_binary)],
         "fps": fps,
         "emotions": emotions_list,
         "emotions_binary": emotions_list_binary,
     }
 
-    result = adjust_seconds(result)
+    # result = adjust_seconds(result)
 
     return result
 
