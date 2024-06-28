@@ -31,7 +31,7 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
         result_emotions_binary = emotions_list_binary
         total_frames = sum([emotion["total_frames"] for emotion in result_emotions_binary])
         total_seconds = frames_to_seconds(total_frames, fps)
-        result_emotions_binary = consolidate_emotion_counts(result_emotions_binary, total_seconds)
+        # result_emotions_binary = consolidate_emotion_counts(result_emotions_binary, total_seconds)
     else:
         # Translate 7-emotions results to binary results
         result_emotions = emotions_list
@@ -47,6 +47,8 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
                 frames_to_seconds(positive_results["total_frames"], fps), "total_sequences":
                 positive_results["total_sequences"]}
         ]
+
+    result_emotions_binary = consolidate_emotion_counts(result_emotions_binary, total_seconds)
 
     return result_emotions, result_emotions_binary, total_frames, total_seconds
 
