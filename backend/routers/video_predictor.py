@@ -118,7 +118,7 @@ def adjust_seconds(result):
     def adjust_emotions(this_emotions, this_total_seconds):
         sum_seconds = sum(emotion.get('total_seconds', 0) for emotion in this_emotions)
         if sum_seconds and sum_seconds != this_total_seconds:
-            this_correction_factor = total_seconds / sum_binary_seconds
+            this_correction_factor = total_seconds / sum_seconds
             for emotion in this_emotions:
                 emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * this_correction_factor)
 
