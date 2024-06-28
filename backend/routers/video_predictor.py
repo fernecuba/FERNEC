@@ -113,24 +113,31 @@ def count_frames_per_emotion(predictions, predictions_binary, fps, video_config)
 
     return result
 
+
 def adjust_seconds(result):
+    def adjust_emotions(this_emotions, this_total_seconds):
+        sum_seconds = sum(emotion.get('total_seconds', 0) for emotion in this_emotions)
+        if sum_seconds and sum_seconds != this_total_seconds:
+            this_correction_factor = total_seconds / sum_binary_seconds
+            for emotion in this_emotions:
+                emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * this_correction_factor)
+
     total_seconds = result['total_seconds']
     emotions = result['emotions']
     emotions_binary = result['emotions_binary']
     
-    # Verificación de existencia y ajuste de segundos en emociones
-    sum_emotion_seconds = sum(emotion.get('total_seconds', 0) for emotion in emotions)
-    if sum_emotion_seconds != total_seconds and sum_emotion_seconds != 0:
-        correction_factor = total_seconds / sum_emotion_seconds
-        for emotion in emotions:
-            emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * correction_factor)
+    # sum_emotion_seconds = sum(emotion.get('total_seconds', 0) for emotion in emotions)
+    # if sum_emotion_seconds and sum_emotion_seconds != total_seconds:
+    #     correction_factor = total_seconds / sum_emotion_seconds
+    #     for emotion in emotions:
+    #         emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * correction_factor)
+    adjust_emotions(emotions, total_seconds)
     
-    # Verificación de existencia y ajuste de segundos en emociones binarias
-    sum_binary_seconds = sum(emotion.get('total_seconds', 0) for emotion in emotions_binary)
-    if sum_binary_seconds != total_seconds and sum_binary_seconds != 0:
-        correction_factor = total_seconds / sum_binary_seconds
-        for emotion in emotions_binary:
-            emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * correction_factor)
+    # sum_binary_seconds = sum(emotion.get('total_seconds', 0) for emotion in emotions_binary)
+    # if sum_binary_seconds and sum_binary_seconds != total_seconds:
+    #     correction_factor = total_seconds / sum_binary_seconds
+    #     for emotion in emotions_binary:
+    #         emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * correction_factor)
+    adjust_emotions(emotions_binary, total_seconds)
 
     return result
-
