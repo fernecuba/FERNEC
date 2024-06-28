@@ -109,4 +109,28 @@ def count_frames_per_emotion(predictions, predictions_binary, fps, video_config)
         "emotions_binary": emotions_list_binary,
     }
 
+    result = adjust_seconds(result)
+
     return result
+
+def adjust_seconds(result):
+    total_seconds = result['total_seconds']
+    emotions = result['emotions']
+    emotions_binary = result['emotions_binary']
+    
+    # Verificación de existencia y ajuste de segundos en emociones
+    sum_emotion_seconds = sum(emotion.get('total_seconds', 0) for emotion in emotions)
+    if sum_emotion_seconds != total_seconds and sum_emotion_seconds != 0:
+        correction_factor = total_seconds / sum_emotion_seconds
+        for emotion in emotions:
+            emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * correction_factor)
+    
+    # Verificación de existencia y ajuste de segundos en emociones binarias
+    sum_binary_seconds = sum(emotion.get('total_seconds', 0) for emotion in emotions_binary)
+    if sum_binary_seconds != total_seconds and sum_binary_seconds != 0:
+        correction_factor = total_seconds / sum_binary_seconds
+        for emotion in emotions_binary:
+            emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * correction_factor)
+
+    return result
+
