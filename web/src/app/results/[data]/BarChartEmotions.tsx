@@ -9,7 +9,7 @@ export const BarChartEmotions = ({ results }: { results: EmotionResults }) => (
   <BarChart
     data={results.emotions.map((emotion) => ({
       name: emotion.label,
-      "Emotion %": (emotion.total_frames / results.total_frames) * 100,
+      "Emotion %": (emotion.total_seconds / results.total_seconds) * 100,
     }))}
     index="name"
     categories={["Emotion %"]}
