@@ -3,7 +3,7 @@ import cv2
 import math
 import numpy as np
 from loguru import logger
-from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video, frames_to_seconds
+from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 from .models import VideoConfig
 from .results_consolidation import consolidate_results
@@ -97,13 +97,14 @@ def count_frames_per_emotion(predictions, predictions_binary, fps, video_config)
                 ]
             }
     """
-    emotions_list, emotions_list_binary, total_frames = consolidate_results(predictions, predictions_binary,
-                                                                            len(os.listdir(TMP_FRAMES_READY_PATH)), fps,
-                                                                            video_config, BINARY_ACCEPTANCE_THRESHOLD)
+    (emotions_list, emotions_list_binary,
+     total_frames, total_seconds) = consolidate_results(predictions, predictions_binary,
+                                                        len(os.listdir(TMP_FRAMES_READY_PATH)), fps,
+                                                        video_config, BINARY_ACCEPTANCE_THRESHOLD)
 
     result = {
         "total_frames": total_frames,
-        "total_seconds": frames_to_seconds(total_frames, fps),
+        "total_seconds": total_seconds,
         "fps": fps,
         "emotions": emotions_list,
         "emotions_binary": emotions_list_binary,

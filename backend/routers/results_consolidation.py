@@ -17,7 +17,6 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
                                                     video_config)
 
     # Total frames
-    total_frames = sum([emotion["total_frames"] for emotion in emotions_list])
     total_frames_binary = sum([emotion["total_frames"] for emotion in emotions_list_binary])
 
     # Calculate percentages
@@ -31,13 +30,15 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
         result_emotions.extend([initialize_emotion_in_zero(emotion) for emotion in POSITIVE_EMOTIONS])
         result_emotions_binary = emotions_list_binary
         total_frames = sum([emotion["total_frames"] for emotion in result_emotions_binary])
+        total_seconds = frames_to_seconds(total_frames, fps)
+        result_emotions_binary = consolidate_emotion_counts(result_emotions_binary, total_seconds)
     else:
         # Translate 7-emotions results to binary results
         result_emotions = emotions_list
         negative_results = reduce_results(result_emotions, NEGATIVE_EMOTIONS)
         positive_results = reduce_results(result_emotions, POSITIVE_EMOTIONS)
         total_frames = sum([emotion["total_frames"] for emotion in result_emotions])
-
+        total_seconds = frames_to_seconds(total_frames, fps)
         result_emotions_binary = [
             {"label": "Negative", "total_frames": negative_results["total_frames"], "total_seconds":
                 frames_to_seconds(negative_results["total_frames"], fps), "total_sequences":
@@ -47,7 +48,8 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
                 positive_results["total_sequences"]}
         ]
 
-    return result_emotions, result_emotions_binary, total_frames
+    return result_emotions, result_emotions_binary, total_frames, total_seconds
+
 
 def binary_model_has_priority(binary_acceptance_threshold, percentage_negative_binary):
     return percentage_negative_binary >= binary_acceptance_threshold
@@ -87,8 +89,31 @@ def calculate_emotion_counts(predictions, class_vocab, frames_amount, fps, video
     return emotions_list
 
 
+def consolidate_emotion_counts(predictions, total_seconds):
+    logger.info(f"consolidate_emotion_counts for predictions {predictions} and total_seconds {total_seconds}")
+    predictions_total_seconds = sum([emotion["total_seconds"] for emotion in predictions])
+    diff = total_seconds - predictions_total_seconds
+    if diff == 0:
+        return predictions
+
+    for i in range(abs(diff)):
+        if diff > 0:
+            winning_emotion_label = max(predictions, key=lambda x: x['total_seconds'])['label']
+            for emotion in predictions:
+                if emotion['label'] == winning_emotion_label and emotion['total_seconds'] < total_seconds:
+                    emotion['total_seconds'] += 1
+        elif diff < 0:
+            lost_emotion_label = min(predictions, key=lambda x: x['total_seconds'])['label']
+            for emotion in predictions:
+                if emotion['label'] == lost_emotion_label and emotion['total_seconds'] > 0:
+                    emotion['total_seconds'] -= 1
+
+    logger.info(f"consolidate_emotion_counts for predictions {predictions}")
+    return predictions
+
+
 def reduce_results(results, emotions_included):
-    reduced = {'total_frames': 0, 'total_sequences': 0}
+    reduced = {'total_frames': 0, 'total_sequences': 0, 'total_seconds': 0}
     for emotion in results:
         if emotion['label'] in emotions_included:
             reduced['total_frames'] += emotion['total_frames']
@@ -101,5 +126,5 @@ def initialize_emotion_in_zero(emotion_label):
     return {
         'label': emotion_label,
         'total_frames': 0,
-        'total_sequences': 0
+        'total_sequences': 0,
     }
