@@ -33,7 +33,7 @@ export interface EmotionResults {
 
 function filterEmotionResults(results: EmotionResults): EmotionResults {
   const filteredResults = results.emotions.filter(
-    (emotion) => emotion.total_sequences !== 0
+    (emotion) => emotion.total_seconds !== 0
   );
 
   return {
