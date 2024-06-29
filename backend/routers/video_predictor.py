@@ -3,7 +3,7 @@ import cv2
 import math
 import numpy as np
 from loguru import logger
-from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video, frames_to_seconds
+from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 from .models import VideoConfig
 from .results_consolidation import consolidate_results
@@ -80,8 +80,11 @@ def count_frames_per_emotion(predictions, predictions_binary, fps, duration, vid
         predictions_binary (list): A list of predictions, where each prediction is a list of emotion probabilities for
             binary model.
         fps (int): frames per second
+        duration (int): duration in seconds
+        video_config (dict)
     Returns:
-        dict: A dictionary containing the total number of frames and a list of emotions with their respective frame counts.
+        dict: A dictionary containing the total number of frames and a list of emotions with their respective
+        frame counts.
             Example:
             {
                 "total_frames": 100,
@@ -110,8 +113,6 @@ def count_frames_per_emotion(predictions, predictions_binary, fps, duration, vid
         "emotions_binary": emotions_list_binary,
     }
 
-    # result = adjust_seconds(result)
-
     return result
 
 
@@ -127,18 +128,7 @@ def adjust_seconds(result):
     emotions = result['emotions']
     emotions_binary = result['emotions_binary']
     
-    # sum_emotion_seconds = sum(emotion.get('total_seconds', 0) for emotion in emotions)
-    # if sum_emotion_seconds and sum_emotion_seconds != total_seconds:
-    #     correction_factor = total_seconds / sum_emotion_seconds
-    #     for emotion in emotions:
-    #         emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * correction_factor)
     adjust_emotions(emotions, total_seconds)
-    
-    # sum_binary_seconds = sum(emotion.get('total_seconds', 0) for emotion in emotions_binary)
-    # if sum_binary_seconds and sum_binary_seconds != total_seconds:
-    #     correction_factor = total_seconds / sum_binary_seconds
-    #     for emotion in emotions_binary:
-    #         emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * correction_factor)
     adjust_emotions(emotions_binary, total_seconds)
 
     return result
