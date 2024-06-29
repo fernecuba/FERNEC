@@ -52,7 +52,7 @@ def predict_video(video_path, feature_extractor, rnn_model, feature_binary_extra
     create_folder_if_not_exists(TMP_FRAMES_READY_PATH)
     clean_folder(TMP_FRAMES_READY_PATH)
 
-    _, fps = get_frames_from_video(
+    _, fps, duration = get_frames_from_video(
         video_path,
         TMP_FRAMES_READY_PATH,
         cfg.FACE_BATCH_SIZE,
@@ -68,10 +68,10 @@ def predict_video(video_path, feature_extractor, rnn_model, feature_binary_extra
     predictions = rnn_model.predict(frames_to_predict)
     predictions_binary = rnn_binary_model.predict(frames_to_predict_binary)
 
-    return [predictions, predictions_binary, fps]
+    return [predictions, predictions_binary, fps, duration]
 
 
-def count_frames_per_emotion(predictions, predictions_binary, fps, video_config):
+def count_frames_per_emotion(predictions, predictions_binary, fps, duration, video_config):
     """
     Counts the number of frames per emotion in the given predictions.
 
@@ -103,7 +103,8 @@ def count_frames_per_emotion(predictions, predictions_binary, fps, video_config)
 
     result = {
         "total_frames": total_frames,
-        "total_seconds": [sum(emotion.get('total_seconds', 0) for emotion in emotions_list_binary)],
+        "real_total_seconds": duration,
+        "total_seconds": sum(emotion.get('total_seconds', 0) for emotion in emotions_list_binary),
         "fps": fps,
         "emotions": emotions_list,
         "emotions_binary": emotions_list_binary,

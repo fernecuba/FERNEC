@@ -26,6 +26,7 @@ interface BinaryEmotionResult {
 export interface EmotionResults {
   total_frames: number;
   total_seconds: number;
+  real_total_seconds: number;
   fps: number;
   emotions: EmotionResult[];
   emotions_binary: BinaryEmotionResult[];

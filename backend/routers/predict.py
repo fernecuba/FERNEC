@@ -102,11 +102,11 @@ def predict_video_async(temp_video_path: str, unique_id: str, user_email: str | 
     rnn_binary_model = request.app.state.rnn_binary_model
     video_config = request.app.state.video_config
     logger.info('Prepearing frames')
-    prediction, prediction_binary, fps = predict_video(temp_video_path, feature_extractor, rnn_model,
+    prediction, prediction_binary, fps, duration = predict_video(temp_video_path, feature_extractor, rnn_model,
                                                        feature_extractor_binary, rnn_binary_model, video_config)
 
     logger.info('Counting frames')
-    result = count_frames_per_emotion(prediction, prediction_binary, fps, video_config)
+    result = count_frames_per_emotion(prediction, prediction_binary, fps, duration, video_config)
     logger.success(f"result is {result}")
     predictions[unique_id] = result
     logger.success(f"Prediction is done for unique_id {unique_id}")
