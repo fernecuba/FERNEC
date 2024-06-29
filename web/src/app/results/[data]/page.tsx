@@ -26,6 +26,7 @@ interface BinaryEmotionResult {
 export interface EmotionResults {
   total_frames: number;
   total_seconds: number;
+  real_total_seconds: number;
   fps: number;
   emotions: EmotionResult[];
   emotions_binary: BinaryEmotionResult[];
@@ -33,7 +34,7 @@ export interface EmotionResults {
 
 function filterEmotionResults(results: EmotionResults): EmotionResults {
   const filteredResults = results.emotions.filter(
-    (emotion) => emotion.total_seconds !== 0
+    (emotion) => emotion.total_seconds > 0
   );
 
   return {

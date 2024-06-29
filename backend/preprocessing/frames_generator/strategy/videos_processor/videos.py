@@ -15,6 +15,8 @@ def get_frames_from_video(video_path, frames_path, batch_size, channels, thumbna
     processed_count = 0
     success, frame = cap.read()
     fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    duration = int(frame_count // fps)
     logger.info(f'FPS del video: {fps}')
 
     while success:
@@ -30,7 +32,7 @@ def get_frames_from_video(video_path, frames_path, batch_size, channels, thumbna
         processed_count = detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_magnitude, faces_only, raw_frames, processed_count)
 
     logger.info(f"Processed {processed_count} frames")
-    return processed_count, fps
+    return processed_count, fps, duration
 
 
 def detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_magnitude, faces_only, raw_frames, processed_count):

@@ -1,6 +1,4 @@
-import os
 import numpy as np
-from loguru import logger
 
 from preprocessing.frames_generator.strategy.videos_processor.videos import frames_to_seconds
 
@@ -17,7 +15,6 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
                                                     video_config)
 
     # Total frames
-    total_frames = sum([emotion["total_frames"] for emotion in emotions_list])
     total_frames_binary = sum([emotion["total_frames"] for emotion in emotions_list_binary])
 
     # Calculate percentages
@@ -48,6 +45,7 @@ def consolidate_results(predictions, predictions_binary, frames_amount, fps, vid
         ]
 
     return result_emotions, result_emotions_binary, total_frames
+
 
 def binary_model_has_priority(binary_acceptance_threshold, percentage_negative_binary):
     return percentage_negative_binary >= binary_acceptance_threshold
@@ -101,5 +99,6 @@ def initialize_emotion_in_zero(emotion_label):
     return {
         'label': emotion_label,
         'total_frames': 0,
-        'total_sequences': 0
+        'total_sequences': 0,
+        'total_seconds': 0,
     }

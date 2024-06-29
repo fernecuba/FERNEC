@@ -3,7 +3,7 @@ import cv2
 import math
 import numpy as np
 from loguru import logger
-from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video, frames_to_seconds
+from preprocessing.frames_generator.strategy.videos_processor.videos import get_frames_from_video
 from preprocessing.frames_generator.utils import create_folder_if_not_exists, clean_folder
 from .models import VideoConfig
 from .results_consolidation import consolidate_results
@@ -52,7 +52,7 @@ def predict_video(video_path, feature_extractor, rnn_model, feature_binary_extra
     create_folder_if_not_exists(TMP_FRAMES_READY_PATH)
     clean_folder(TMP_FRAMES_READY_PATH)
 
-    _, fps = get_frames_from_video(
+    _, fps, duration = get_frames_from_video(
         video_path,
         TMP_FRAMES_READY_PATH,
         cfg.FACE_BATCH_SIZE,
@@ -68,10 +68,10 @@ def predict_video(video_path, feature_extractor, rnn_model, feature_binary_extra
     predictions = rnn_model.predict(frames_to_predict)
     predictions_binary = rnn_binary_model.predict(frames_to_predict_binary)
 
-    return [predictions, predictions_binary, fps]
+    return [predictions, predictions_binary, fps, duration]
 
 
-def count_frames_per_emotion(predictions, predictions_binary, fps, video_config):
+def count_frames_per_emotion(predictions, predictions_binary, fps, duration, video_config):
     """
     Counts the number of frames per emotion in the given predictions.
 
@@ -80,8 +80,11 @@ def count_frames_per_emotion(predictions, predictions_binary, fps, video_config)
         predictions_binary (list): A list of predictions, where each prediction is a list of emotion probabilities for
             binary model.
         fps (int): frames per second
+        duration (int): duration in seconds
+        video_config (dict)
     Returns:
-        dict: A dictionary containing the total number of frames and a list of emotions with their respective frame counts.
+        dict: A dictionary containing the total number of frames and a list of emotions with their respective
+        frame counts.
             Example:
             {
                 "total_frames": 100,
@@ -103,10 +106,29 @@ def count_frames_per_emotion(predictions, predictions_binary, fps, video_config)
 
     result = {
         "total_frames": total_frames,
-        "total_seconds": frames_to_seconds(total_frames, fps),
+        "real_total_seconds": duration,
+        "total_seconds": sum(emotion.get('total_seconds', 0) for emotion in emotions_list_binary),
         "fps": fps,
         "emotions": emotions_list,
         "emotions_binary": emotions_list_binary,
     }
+
+    return result
+
+
+def adjust_seconds(result):
+    def adjust_emotions(this_emotions, this_total_seconds):
+        sum_seconds = sum(emotion.get('total_seconds', 0) for emotion in this_emotions)
+        if sum_seconds and sum_seconds != this_total_seconds:
+            this_correction_factor = this_total_seconds / sum_seconds
+            for emotion in this_emotions:
+                emotion['total_seconds'] = round(emotion.get('total_seconds', 0) * this_correction_factor)
+
+    total_seconds = result['total_seconds']
+    emotions = result['emotions']
+    emotions_binary = result['emotions_binary']
+    
+    adjust_emotions(emotions, total_seconds)
+    adjust_emotions(emotions_binary, total_seconds)
 
     return result
