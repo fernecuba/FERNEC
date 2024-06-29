@@ -129,4 +129,5 @@ def initialize_emotion_in_zero(emotion_label):
         'label': emotion_label,
         'total_frames': 0,
         'total_sequences': 0,
+        'total_seconds': 0
     }
