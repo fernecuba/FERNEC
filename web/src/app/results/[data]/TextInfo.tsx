@@ -27,7 +27,10 @@ export const TextInfo = ({ results }: { results: EmotionResults }) => {
   return (
     <>
       <p className="font-bold">
-        Your video is {results.total_seconds} seconds long
+        Your video is {results.real_total_seconds} seconds long
+      </p>
+      <p className="font-bold">
+        We detected your face for {results.total_seconds} seconds
       </p>
       {sortedEmotions.map((emotion) => (
         <p key={emotion.label} className="font-bold">
