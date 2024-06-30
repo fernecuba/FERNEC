@@ -1,4 +1,4 @@
-results_email_body = f"""
+results_email_body = """
     <html>
         <body style="font-family: Arial, sans-serif; color: #333; font-size: 18px;">
             <div style="text-align: center; padding: 20px;">

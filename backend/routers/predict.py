@@ -102,4 +102,5 @@ def send_email_with_prediction_results(result, user_email: str, request: Request
     logger.debug(f"Results hashed: {result_encoded}")
     url = f"{request.headers.get('origin')}/results/{result_encoded}"
     body = results_email_body.format(url)
+    print(f"body is {body}")
     _send_email(recipients, "fernec results", body, email_config)
