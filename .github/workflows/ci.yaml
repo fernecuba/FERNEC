@@ -13,6 +13,9 @@ jobs:
     - name: checkout code
       uses: actions/checkout@v2
 
+    - name: Set CONFIG_FILE env var
+      run: echo "CONFIG_FILE=./config_example.yaml" >> $GITHUB_ENV
+
     - name: environment setup
       uses: actions/setup-python@v2
       with:
