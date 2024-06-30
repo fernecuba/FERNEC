@@ -62,9 +62,11 @@ export default function UploadVideo({ className }: { className?: string }) {
                 if (e.target.files) {
                   const file = e.target.files[0];
                   if (file.type !== "video/mp4") {
-                    alert(
-                      "Only MP4 videos are accepted. Please select a valid file."
-                    );
+                    toast({
+                      description:
+                        "Only MP4 videos are accepted. Please select a valid file.",
+                      variant: "destructive",
+                    });
                     e.target.value = ""; // Clear the selected file
                   } else {
                     setSubmitFile(file);
