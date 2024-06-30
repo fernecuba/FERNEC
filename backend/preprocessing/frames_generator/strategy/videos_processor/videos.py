@@ -1,11 +1,8 @@
-import gc
 import cv2
-import ffmpeg
 from tqdm import tqdm
 from loguru import logger
 from preprocessing.frames_generator.face_detector.detector import detect_faces
 from preprocessing.frames_generator.strategy.images_processor.images import get_pixels, save_image
-from preprocessing.frames_generator.utils import clean_folder
 
 
 # TODO: move me into videos_processor?
