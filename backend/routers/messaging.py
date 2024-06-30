@@ -19,7 +19,7 @@ async def send_email(request: Request, email: Email) -> JSONResponse:
         _send_email(email.recipients, email.subject, email.body, request.app.state.email_config)
         return JSONResponse(status_code=201, content=jsonable_encoder(email))
     except Exception as e:
-        print(f"Exception sending email. Error detail: {e}")
+        logger.error(f"Exception sending email. Error detail: {e}")
         raise HTTPException(status_code=500, detail=responses[500])
 
 
