@@ -1,6 +1,8 @@
 name: Backend unit tests
 
 on:
+  push:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
