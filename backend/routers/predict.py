@@ -38,12 +38,12 @@ async def predict_video_endpoint(
     request: Request, 
     background_tasks: BackgroundTasks
 ) -> JSONResponse:
-    # Verify there is a file in the request
-    form_data = await request.form()
-    if "video_file" not in form_data:
-        raise HTTPException(status_code=400, detail="Couldn't find video file")
-
     try:
+        form_data = await request.form()
+        # Check file exists
+        if "video_file" not in form_data:
+            raise HTTPException(status_code=400, detail="Couldn't find video file")
+
         user_email = str(form_data["email"])
         video_file = form_data["video_file"]
         video_format = os.path.splitext(video_file.filename)[-1].lower()
@@ -58,7 +58,10 @@ async def predict_video_endpoint(
 
         background_tasks.add_task(predict_video_task, temp_video_path, user_email, request, background_tasks)
         return JSONResponse(status_code=202, content={})
-        
+
+    except HTTPException as e:
+        logger.error(f"HTTPException in predict_video_endpoint {e}")
+        raise e
     except Exception as e:
         logger.error(f"exception in predict_video_endpoint {e}")
         raise HTTPException(status_code=500, detail=str(e))
