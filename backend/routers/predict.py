@@ -21,8 +21,7 @@ async def predict_image(request: Request, image_item: ImageItem) -> JSONResponse
         image_data = base64.b64decode(image_item.image_base64)
         image = Image.open(io.BytesIO(image_data))
         image = image.resize((request.app.state.video_config.WIDTH, request.app.state.video_config.HEIGHT))
-        # image = np.expand_dims(image, axis=0)
-        # print(image.shape)
+
         predictions_result = request.app.state.cnn_model.predict(image).tolist()[0]
         prediction_class = np.argmax(predictions_result)
         emociones = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
@@ -102,5 +101,4 @@ def send_email_with_prediction_results(result, user_email: str, request: Request
     logger.debug(f"Results hashed: {result_encoded}")
     url = f"{request.headers.get('origin')}/results/{result_encoded}"
     body = results_email_body.format(url)
-    print(f"body is {body}")
     _send_email(recipients, "fernec results", body, email_config)
