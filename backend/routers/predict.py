@@ -38,12 +38,12 @@ async def predict_video_endpoint(
     request: Request, 
     background_tasks: BackgroundTasks
 ) -> JSONResponse:
-    try:
-        # Verify there is a file in the request
-        form_data = await request.form()
-        if "video_file" not in form_data:
-            return JSONResponse(content={"message": "Couldn't find video file"}, status_code=400)
+    # Verify there is a file in the request
+    form_data = await request.form()
+    if "video_file" not in form_data:
+        raise HTTPException(status_code=400, detail="Couldn't find video file")
 
+    try:
         user_email = str(form_data["email"])
         video_file = form_data["video_file"]
         video_format = os.path.splitext(video_file.filename)[-1].lower()
@@ -91,6 +91,7 @@ def predict_video_task(temp_video_path: str, user_email: str | None, request: Re
 
     except Exception as e:
         logger.error(f"exception in predict_video_async {e}")
+        raise e
 
 
 def send_email_with_prediction_results(result, user_email: str, request: Request):

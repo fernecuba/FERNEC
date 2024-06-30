@@ -44,6 +44,24 @@ async def test_predict_video_endpoint_success():
 
 
 @pytest.mark.asyncio
+async def test_predict_video_endpoint_fails_with_no_video_file():
+    with mock.patch('backend.routers.predict.predict_video_task') as mock_predict_video_task:
+        mock_predict_video_task.return_value = None
+        form_data = FormData({})
+
+        request = PredictVideoEndpointMockRequest(form_data)
+        background_tasks = BackgroundTasks()
+
+        try:
+            _ = await predict_video_endpoint(request, background_tasks)
+            assert False, "predict_video_endpoint should have failed"
+        except HTTPException as e:
+            assert e.status_code == 400
+            assert str(e.detail) == "Couldn't find video file"
+            assert len(background_tasks.tasks) == 0
+
+
+@pytest.mark.asyncio
 async def test_predict_video_endpoint_fails():
     with mock.patch('backend.routers.predict.predict_video_task') as mock_predict_video_task:
         mock_predict_video_task.return_value = None
@@ -59,7 +77,7 @@ async def test_predict_video_endpoint_fails():
             mock_file.side_effect = IOError("fake file write error")
             try:
                 _ = await predict_video_endpoint(request, background_tasks)
-                assert False, "predict_video_endpoint called should have failed"
+                assert False, "predict_video_endpoint should have failed"
             except HTTPException as e:
                 assert e.status_code == 500
                 assert str(e.detail) == "fake file write error"
@@ -113,9 +131,11 @@ async def test_predict_video_task_fails():
         request = PredictVideoTaskMockRequest()
         background_tasks = BackgroundTasks()
 
-        predict_video_task("temp_video.mp4", "john.doe@fernec.com", request, background_tasks)
-
-        mock_predict_video.assert_called_once()
-        mock_count_frames.assert_not_called()
-        mock_send_email.assert_not_called()
-        assert len(background_tasks.tasks) == 0
+        try:
+            predict_video_task("temp_video.mp4", "john.doe@fernec.com", request, background_tasks)
+            assert False, "predict_video_task should have failed"
+        except Exception:
+            mock_predict_video.assert_called_once()
+            mock_count_frames.assert_not_called()
+            mock_send_email.assert_not_called()
+            assert len(background_tasks.tasks) == 0
