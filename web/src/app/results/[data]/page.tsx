@@ -12,23 +12,44 @@ interface EmotionResult {
     | "Sadness"
     | "Surprise";
   total_frames: number;
+  total_seconds: number;
+  total_sequences: number;
 }
 
 interface BinaryEmotionResult {
   label: "Negative" | "Positive";
   total_frames: number;
+  total_seconds: number;
+  total_sequences: number;
 }
 
 export interface EmotionResults {
   total_frames: number;
+  total_seconds: number;
+  real_total_seconds: number;
+  fps: number;
   emotions: EmotionResult[];
   emotions_binary: BinaryEmotionResult[];
+}
+
+function filterEmotionResults(results: EmotionResults): EmotionResults {
+  const filteredResults = results.emotions.filter(
+    (emotion) => emotion.total_seconds > 0
+  );
+
+  return {
+    ...results,
+    emotions: filteredResults
+  };
 }
 
 export default function Results({ params }: { params: { data: string } }) {
   const results = JSON.parse(
     atob(decodeURIComponent(params.data))
   ) as EmotionResults;
+
+  // Filtrar los resultados donde total_sequences es distinto de 0
+  const nonZeroSequencesResults = filterEmotionResults(results);
 
   return (
     <main className="flex h-screen flex-col">
@@ -48,11 +69,16 @@ export default function Results({ params }: { params: { data: string } }) {
               <BarChartEmotions results={results} />
             </div>
             <div className="w-1/2 flex flex-col justify-around items-center">
-              <TextInfo results={results} />
+              <TextInfo results={nonZeroSequencesResults} />
             </div>
           </div>
         </section>
       </div>
+      <div className="w-full flex justify-center items-end mt-4 mb-4">
+        <p className="text-md text-gray-600">
+          The presented results are based on automated analysis and may not be entirely accurate.
+        </p>
+      </div>
     </main>
-  );
+);
 }

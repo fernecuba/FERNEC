@@ -1,11 +1,8 @@
-import gc
 import cv2
-import ffmpeg
 from tqdm import tqdm
 from loguru import logger
 from preprocessing.frames_generator.face_detector.detector import detect_faces
 from preprocessing.frames_generator.strategy.images_processor.images import get_pixels, save_image
-from preprocessing.frames_generator.utils import clean_folder
 
 
 # TODO: move me into videos_processor?
@@ -15,6 +12,8 @@ def get_frames_from_video(video_path, frames_path, batch_size, channels, thumbna
     processed_count = 0
     success, frame = cap.read()
     fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    duration = int(frame_count // fps)
     logger.info(f'FPS del video: {fps}')
 
     while success:
@@ -30,7 +29,7 @@ def get_frames_from_video(video_path, frames_path, batch_size, channels, thumbna
         processed_count = detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_magnitude, faces_only, raw_frames, processed_count)
 
     logger.info(f"Processed {processed_count} frames")
-    return processed_count, fps
+    return processed_count, fps, duration
 
 
 def detect_and_save_faces(frames_path, channels, thumbnail_size, frames_order_magnitude, faces_only, raw_frames, processed_count):
