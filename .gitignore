@@ -13,3 +13,6 @@
 
 # project configuration
 config.yaml
+
+# mac os files
+.DS_Store
