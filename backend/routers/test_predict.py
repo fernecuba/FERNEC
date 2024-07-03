@@ -6,7 +6,7 @@ from unittest import mock
 from starlette.datastructures import FormData
 
 from main import get_app
-from .predict import predict_video_endpoint, predict_video_task
+from .predict import predict_video_endpoint, predict_video_task, send_email_with_prediction_results
 
 app, _ = get_app()
 client = TestClient(app)
@@ -126,8 +126,7 @@ async def test_predict_video_task_fails():
     with mock.patch('backend.routers.predict.predict_video') as mock_predict_video, \
             mock.patch('backend.routers.predict.count_frames_per_emotion') as mock_count_frames, \
             mock.patch('backend.routers.predict.send_email_with_prediction_results') as mock_send_email:
-        mock_predict_video.side_effect = Exception("Simulated prediction error")
-
+        mock_predict_video.side_effect = Exception("Fake exception")
         request = PredictVideoTaskMockRequest()
         background_tasks = BackgroundTasks()
 
@@ -139,3 +138,47 @@ async def test_predict_video_task_fails():
             mock_count_frames.assert_not_called()
             mock_send_email.assert_not_called()
             assert len(background_tasks.tasks) == 0
+
+
+class SendEmailWithPredictionResultsMockRequest:
+    class MockApp:
+        class MockState:
+            def __init__(self):
+                self.email_config = mock.MagicMock()
+
+        state = MockState()
+
+    class MockClient:
+        host = 'localhost'
+
+    app = MockApp()
+    client = MockClient()
+    headers = mock.MagicMock()
+
+
+@pytest.mark.asyncio
+async def test_send_email_with_prediction_results_success():
+    with mock.patch('backend.routers.predict._send_email') as mock_send_email:
+        request = SendEmailWithPredictionResultsMockRequest()
+        result = {
+            'total_seconds': 10,
+            'predictions': "fake"
+        }
+        send_email_with_prediction_results(result, "john.doe@fernec.com", request)
+        mock_send_email.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_send_email_with_prediction_results_fails():
+    with mock.patch('backend.routers.predict._send_email') as mock_send_email:
+        mock_send_email.side_effect = Exception("Fake exception")
+        request = SendEmailWithPredictionResultsMockRequest()
+        result = {
+            'total_seconds': 10,
+            'predictions': "fake"
+        }
+        try:
+            send_email_with_prediction_results(result, "john.doe@fernec.com", request)
+            assert False, "send_email_with_prediction_results should have failed"
+        except Exception:
+            mock_send_email.assert_called_once()

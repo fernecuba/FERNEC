@@ -10,3 +10,7 @@ temp/
 
 # env files
 .env
+
+# coverage
+htmlcov/
+.coverage
