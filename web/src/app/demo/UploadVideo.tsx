@@ -22,16 +22,16 @@ export default function UploadVideo({ className }: { className?: string }) {
   const sendVideo = async (email: string) => {
     if (!submitFile) return;
 
-    const response = await uploadVideo({
+    uploadVideo({
       email,
       video: submitFile,
       fileName: submitFile.name,
       fileType: submitFile.type,
-    });
-
-    toast({
-      description: response.ok ? "File upload" : "Error uploading file",
-      variant: response.ok ? "default" : "destructive",
+    }).then((response) => {
+      toast({
+        description: response.ok ? "File upload" : "Error uploading file",
+        variant: response.ok ? "default" : "destructive",
+      });
     });
   };
 
@@ -47,7 +47,8 @@ export default function UploadVideo({ className }: { className?: string }) {
         <CardHeader>
           <CardTitle>Upload Interview</CardTitle>
           <CardDescription>
-            Select a video from your device to upload. Only MP4 files are accepted.
+            Select a video from your device to upload. Only MP4 files are
+            accepted.
           </CardDescription>
         </CardHeader>
         <form onSubmit={onSubmit} className="flex-1 flex flex-col">
@@ -61,8 +62,12 @@ export default function UploadVideo({ className }: { className?: string }) {
                 if (e.target.files) {
                   const file = e.target.files[0];
                   if (file.type !== "video/mp4") {
-                    alert("Only MP4 videos are accepted. Please select a valid file.");
-                    e.target.value = ''; // Clear the selected file
+                    toast({
+                      description:
+                        "Only MP4 videos are accepted. Please select a valid file.",
+                      variant: "destructive",
+                    });
+                    e.target.value = ""; // Clear the selected file
                   } else {
                     setSubmitFile(file);
                   }
