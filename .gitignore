@@ -13,3 +13,6 @@
 
 # project configuration
 config.yaml
+
+#zone identifier
+*Zone.Identifier
