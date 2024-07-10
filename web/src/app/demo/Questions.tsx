@@ -2,7 +2,13 @@ import { useState } from "react";
 import { ChevronRight, RotateCcw } from "lucide-react";
 import { getQuestions } from "./action";
 
-const fields = ["Data Analytics", "IT Support", "UX Design", "Cybersecurity"];
+const fields = [
+  "Data Analytics",
+  "IT Support",
+  "UX Design",
+  "Cybersecurity",
+  "Generic",
+];
 
 export default function Questions() {
   const [questions, setQuestions] = useState<string[]>([]);

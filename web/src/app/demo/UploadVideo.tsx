@@ -33,6 +33,10 @@ export default function UploadVideo({ className }: { className?: string }) {
         variant: response.ok ? "default" : "destructive",
       });
     });
+
+    toast({
+      title: "The results will be sent to your email!",
+    });
   };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
