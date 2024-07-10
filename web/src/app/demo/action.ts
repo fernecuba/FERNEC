@@ -9,8 +9,8 @@ export async function getQuestions(input: string) {
   const { object: questions } = await generateObject({
     model: google("models/gemini-1.5-pro-latest"),
     system:
-      "Sos un entrevistador para una empresa. Sos profesional y buscas evaluar la capacidad del entrevistado para ocupar el puesto.",
-    prompt: `Desarrolla 4 preguntas para evaluar la capacidad del entrevistado en el campo del ${input}`,
+      "You are an interviewer for a company. You are professional and seek to evaluate the interviewee's ability to fill the position.",
+    prompt: `Develop 4 questions to evaluate the ability of the interviewee in the field of ${input}`,
     schema: z.object({
       questions: z.array(z.string().describe("Question for an interview")),
     }),
