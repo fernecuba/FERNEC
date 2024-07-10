@@ -58,7 +58,7 @@ export default function UploadVideo({ className }: { className?: string }) {
         <form onSubmit={onSubmit} className="flex-1 flex flex-col">
           <CardContent className="flex flex-1">
             <input
-              id="pickImage"
+              id="pickVideo"
               type="file"
               accept="video/mp4"
               className="hidden"
@@ -79,12 +79,12 @@ export default function UploadVideo({ className }: { className?: string }) {
               }}
             />
             <label
-              htmlFor="pickImage"
+              htmlFor="pickVideo"
               className="border-2 border-dashed border-gray-200/40 rounded-lg w-full flex items-center justify-center relative overflow-hidden"
             >
               {submitFile ? (
                 <video
-                  className="object-fill absolute w-full h-full"
+                  className="object-contain absolute w-full h-full"
                   src={URL.createObjectURL(submitFile)}
                 />
               ) : (
