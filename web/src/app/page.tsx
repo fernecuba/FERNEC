@@ -13,7 +13,7 @@ export default function Home() {
                 Practice your interviews,
                 <br /> test your emotions
               </h1>
-              <h4 className="text-gray-400">
+              <h4 className="text-gray-500">
                 The Open Source, Face Emotion Recognition platform to practise
                 your interviews
               </h4>
@@ -40,7 +40,7 @@ export default function Home() {
                       <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
                         Be prepared for your next interview
                       </h2>
-                      <p className="text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+                      <p className="text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-500">
                         Want to excel in your interviews? Our interview practice
                         platform offers a unique experience with
                         emotional analysis. Receive detailed feedback on how you
@@ -72,13 +72,13 @@ export default function Home() {
                     <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
                       Enhance your hiring process
                     </h2>
-                    <p className="text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+                    <p className="text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-500">
                       Our face emotion recognition technology provides deep
                       insights into candidate emotions and behaviors during job
                       interviews, helping you make more informed and unbiased
                       hiring decisions.
                     </p>
-                    <ul className="grid gap-2 text-gray-500 dark:text-gray-400">
+                    <ul className="grid gap-2 text-gray-500 dark:text-gray-500">
                       <li>
                         <CheckIcon className="mr-2 inline-block h-4 w-4" />
                         Accurately assess candidate engagement and enthusiasm
@@ -100,13 +100,13 @@ export default function Home() {
                       <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
                         How it works
                       </h2>
-                      <p className="text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+                      <p className="text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-500">
                         Our face emotion recognition technology is seamlessly
                         integrated into the interview process, providing
                         detailed insights to help you make more informed hiring
                         decisions.
                       </p>
-                      <ol className="grid gap-4 text-gray-500 dark:text-gray-400">
+                      <ol className="grid gap-4 text-gray-500 dark:text-gray-500">
                         <li>
                           <div className="flex items-start gap-2">
                             <div className="mt-1 rounded-full bg-gray-900 px-2 py-1 text-xs font-medium text-gray-50 dark:bg-gray-50 dark:text-gray-900">
@@ -173,7 +173,7 @@ export default function Home() {
             </div>
           </section>
           <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-500">
               © 2024 Face Emotion Recognition. All rights reserved.
             </p>
             <nav className="sm:ml-auto flex gap-4 sm:gap-6">
