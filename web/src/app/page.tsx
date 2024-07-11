@@ -38,11 +38,11 @@ export default function Home() {
                   <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                     <div className="space-y-4">
                       <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                        Be prepare for your next interview
+                        Be prepared for your next interview
                       </h2>
                       <p className="text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                         Want to excel in your interviews? Our interview practice
-                        platform offers a unique experience with real-time
+                        platform offers a unique experience with
                         emotional analysis. Receive detailed feedback on how you
                         feel during your responses, helping you identify and
                         improve your weak points. With advanced tools and
@@ -70,7 +70,7 @@ export default function Home() {
                   />
                   <div className="space-y-4">
                     <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                      Enhance Your Hiring Process
+                      Enhance your hiring process
                     </h2>
                     <p className="text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                       Our face emotion recognition technology provides deep
@@ -98,12 +98,12 @@ export default function Home() {
                   <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                     <div className="space-y-4">
                       <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                        How It Works
+                        How it works
                       </h2>
                       <p className="text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                         Our face emotion recognition technology is seamlessly
                         integrated into the interview process, providing
-                        real-time insights to help you make more informed hiring
+                        detailed insights to help you make more informed hiring
                         decisions.
                       </p>
                       <ol className="grid gap-4 text-gray-500 dark:text-gray-400">
