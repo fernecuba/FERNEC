@@ -3,7 +3,6 @@ import pytest
 from unittest import mock
 from fastapi import HTTPException
 from http.client import responses
-from loguru import logger
 
 from .messaging import send_email, _send_email
 from .models import Email, EmailConfig

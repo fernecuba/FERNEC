@@ -38,7 +38,12 @@ Also you could try [this request](http://127.0.0.1:8000/items/5?q=somequery)
 
 ## Testing
 
-Simply run `pytest`
+Step onto `/backend` with `cd backend`
+
+Run `python3 -m pytest`
+
+To check coverage you can use `coverage run -m pytest` and then `coverage html -i`. File coverage will be saved onto `backend/htmlcov`
+
 
 ## Documentation
 
