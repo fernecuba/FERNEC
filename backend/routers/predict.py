@@ -1,6 +1,5 @@
 import os
 import io
-import uuid
 import base64
 import numpy as np
 import json
@@ -8,50 +7,30 @@ from loguru import logger
 from PIL import Image
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
+from resources.results_email import results_email_body
 from .models import ImageItem
 from .video_predictor import predict_video, count_frames_per_emotion
 from .messaging import _send_email
 
 router = APIRouter(prefix="/predict")
 
-# TODO: this is good enough only for 1 worker
-predictions = {}
-
 
 @router.post('/image')
 async def predict_image(request: Request, image_item: ImageItem) -> JSONResponse:
     try:
-        # Decodificar la imagen Base64
         image_data = base64.b64decode(image_item.image_base64)
-        # Convertir los datos de la imagen en un objeto de imagen
         image = Image.open(io.BytesIO(image_data))
-        # Preprocesar la imagen para que coincida con el formato esperado por el modelo
-        image = image.resize((224, 224))  # Ajustar tam
+        image = image.resize((request.app.state.video_config.WIDTH, request.app.state.video_config.HEIGHT))
 
-        image = np.expand_dims(image, axis=0)  # Agrega una dimensión de lote
-
-        # TO DO: cut face from image
-
-        # Realizar la predicción utilizando el modelo cargado
         predictions_result = request.app.state.cnn_model.predict(image).tolist()[0]
         prediction_class = np.argmax(predictions_result)
         emociones = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
         return JSONResponse(status_code=200, content={
-            "predictions": predictions,
+            "predictions": predictions_result,
             "emotion": emociones[prediction_class]
         })
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.get('/{prediction_id}')
-def get_predictions(prediction_id: str) -> JSONResponse:
-    if prediction_id not in predictions.keys():
-        return JSONResponse(content={"message": f"prediction with id {prediction_id} does not exist"}, status_code=404)
-    if predictions[prediction_id] is None:
-        return JSONResponse(content={"message": f"prediction with id {prediction_id} is not ready yet"},
-                            status_code=202)
-    return JSONResponse(content=predictions[prediction_id], status_code=200)
 
 
 @router.post('/video')
@@ -60,14 +39,13 @@ async def predict_video_endpoint(
     background_tasks: BackgroundTasks
 ) -> JSONResponse:
     try:
-        # Verify there is a file in the request
         form_data = await request.form()
+        # Check file exists
         if "video_file" not in form_data:
-            return JSONResponse(content={"message": "Couldn't find video file"}, status_code=400)
+            raise HTTPException(status_code=400, detail="Couldn't find video file")
 
-        user_email = str(form_data['email'])
+        user_email = str(form_data["email"])
         video_file = form_data["video_file"]
-
         video_format = os.path.splitext(video_file.filename)[-1].lower()
 
         contents = await video_file.read()
@@ -78,14 +56,14 @@ async def predict_video_endpoint(
         with open(temp_video_path, "wb") as temp_video:
             temp_video.write(contents)
 
-        unique_id = str(uuid.uuid4())
-        background_tasks.add_task(predict_video_async, temp_video_path, unique_id, user_email, request,
-                                  background_tasks)
-        # i.e. prediction is calculating
-        predictions[unique_id] = None
-        return JSONResponse(status_code=202, content={"uuid": unique_id})
-        
+        background_tasks.add_task(predict_video_task, temp_video_path, user_email, request, background_tasks)
+        return JSONResponse(status_code=202, content={})
+
+    except HTTPException as e:
+        logger.error(f"HTTPException in predict_video_endpoint {e}")
+        raise e
     except Exception as e:
+        logger.error(f"exception in predict_video_endpoint {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -94,25 +72,29 @@ def encode_results(results):
     return base64.b64encode(res.encode("utf-8")).decode("utf-8")
 
 
-def predict_video_async(temp_video_path: str, unique_id: str, user_email: str | None,  request: Request,
-                        background_tasks: BackgroundTasks):
-    feature_extractor = request.app.state.feature_extractor
-    rnn_model = request.app.state.rnn_model
-    feature_extractor_binary = request.app.state.feature_binary_extractor
-    rnn_binary_model = request.app.state.rnn_binary_model
-    video_config = request.app.state.video_config
-    logger.info('Prepearing frames')
-    prediction, prediction_binary, fps, duration = predict_video(temp_video_path, feature_extractor, rnn_model,
-                                                                 feature_extractor_binary, rnn_binary_model,
-                                                                 video_config)
+def predict_video_task(temp_video_path: str, user_email: str | None, request: Request,
+                       background_tasks: BackgroundTasks):
+    try:
+        feature_extractor = request.app.state.feature_extractor
+        rnn_model = request.app.state.rnn_model
+        feature_extractor_binary = request.app.state.feature_binary_extractor
+        rnn_binary_model = request.app.state.rnn_binary_model
+        video_config = request.app.state.video_config
+        logger.info("Preparing frames")
+        prediction, prediction_binary, fps, duration = predict_video(temp_video_path, feature_extractor, rnn_model,
+                                                                     feature_extractor_binary, rnn_binary_model,
+                                                                     video_config)
 
-    logger.info('Counting frames')
-    result = count_frames_per_emotion(prediction, prediction_binary, fps, duration, video_config)
-    logger.success(f"result is {result}")
-    predictions[unique_id] = result
-    logger.success(f"Prediction is done for unique_id {unique_id}")
-    if user_email:
-        background_tasks.add_task(send_email_with_prediction_results, result, user_email, request)
+        logger.info("Counting frames")
+        result = count_frames_per_emotion(prediction, prediction_binary, fps, duration, video_config)
+
+        logger.success(f"Prediction is done. Result is {result}")
+        if user_email:
+            background_tasks.add_task(send_email_with_prediction_results, result, user_email, request)
+
+    except Exception as e:
+        logger.error(f"exception in predict_video_async {e}")
+        raise e
 
 
 def send_email_with_prediction_results(result, user_email: str, request: Request):
@@ -122,20 +104,5 @@ def send_email_with_prediction_results(result, user_email: str, request: Request
     result_encoded = encode_results(result)
     logger.debug(f"Results hashed: {result_encoded}")
     url = f"{request.headers.get('origin')}/results/{result_encoded}"
-    body = f"""
-            <html>
-                <body style="font-family: Arial, sans-serif; color: #333; font-size: 18px;">
-                    <div style="text-align: center; padding: 20px;">
-                        <img src="cid:logo" alt="FERNEC Logo" style="width: 200px;">
-                    </div>
-                    <div style="margin: 20px; text-align: center;">
-                        <h2 style="font-size: 24px;">Dear User,</h2>
-                        <p style="font-size: 20px;">We are pleased to inform you that your results are ready.</p>
-                        <p style="font-size: 20px;">Please click the link below to view them:</p>
-                        <a href="{url}" style="display: inline-block; padding: 12px 24px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px; font-size: 20px;">View Results</a>
-                        <p style="font-size: 20px;">Sincerely,<br>The FERNEC Team</p>
-                    </div>
-                </body>
-            </html>
-            """
-    _send_email(recipients, "fernec results", body, email_config)
+    body = results_email_body.format(url)
+    _send_email(recipients, "Your FERNEC emotion analysis results are ready!", body, email_config)
