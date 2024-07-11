@@ -7,7 +7,7 @@ const fields = [
   "IT Support",
   "UX Design",
   "Cybersecurity",
-  "Generic",
+  "Classic job interview questions",
 ];
 
 export default function Questions() {
