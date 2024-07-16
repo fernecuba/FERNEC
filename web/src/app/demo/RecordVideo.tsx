@@ -28,8 +28,8 @@ export default function RecordVideo({ className }: { className?: string }) {
     clearPreview,
     applyRecordingOptions,
   } = useRecordWebcam({
-    options: { fileType: 'mp4' },
-    mediaRecorderOptions: { mimeType: 'video/mp4' },
+    options: { fileType: "mp4" },
+    mediaRecorderOptions: { mimeType: "video/mp4" },
   });
   const { toast } = useToast();
   const [modal, openModal] = useState(false);
@@ -66,16 +66,20 @@ export default function RecordVideo({ className }: { className?: string }) {
       return;
     }
 
-    const response = await uploadVideo({
+    uploadVideo({
       email,
       video: recorded.blob,
       fileName: recorded.fileName,
       fileType: recorded.fileType,
+    }).then((response) => {
+      toast({
+        description: response.ok ? "File upload" : "Error uploading file",
+        variant: response.ok ? "default" : "destructive",
+      });
     });
 
     toast({
-      description: response.ok ? "File upload" : "Error uploading file",
-      variant: response.ok ? "default" : "destructive",
+      title: "The results will be sent to your email!",
     });
   };
 

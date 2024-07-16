@@ -9,18 +9,6 @@ function NavBar() {
         <h1 className="text-2xl font-bold">FERNEC</h1>
       </Link>
       <nav className="ml-auto flex gap-4 sm:gap-6">
-        <Link
-          className="text-sm font-medium hover:underline underline-offset-4"
-          href="#"
-        >
-          About
-        </Link>
-        <Link
-          className="text-sm font-medium hover:underline underline-offset-4"
-          href="/demo"
-        >
-          Try Demo
-        </Link>
       </nav>
     </header>
   );
