@@ -7,9 +7,9 @@ export const DonutChartBinary = ({ results }: { results: EmotionResults }) => {
   const data = results.emotions_binary.map((emotion) => ({
     name: emotion.label,
     amount: emotion.total_seconds,
-    share: `${Math.round(
+    share: `${(
       (emotion.total_seconds / results.total_seconds) * 100
-    )}%`,
+    ).toFixed(1)}%`,
     color: emotion.label === "Negative" ? "bg-red-500" : "bg-green-500",
   }));
   return (
