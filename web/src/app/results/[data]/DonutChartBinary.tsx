@@ -7,13 +7,13 @@ export const DonutChartBinary = ({ results }: { results: EmotionResults }) => {
   const data = results.emotions_binary.map((emotion) => ({
     name: emotion.label,
     amount: emotion.total_seconds,
-    share: `${(
-      (emotion.total_seconds / results.total_seconds) * 100
-    ).toFixed(1)}%`,
+    share: `${((emotion.total_seconds / results.total_seconds) * 100).toFixed(
+      1
+    )}%`,
     color: emotion.label === "Negative" ? "bg-red-500" : "bg-green-500",
   }));
   return (
-    <Card className="sm:mx-auto sm:max-w-lg">
+    <Card className="sm:mx-auto sm:max-w-lg drop-shadow-xl">
       <DonutChart
         className="mt-8"
         data={data}
@@ -24,6 +24,7 @@ export const DonutChartBinary = ({ results }: { results: EmotionResults }) => {
         }
         showTooltip={true}
         colors={["red", "green"]}
+        showAnimation={true}
       />
       <p className="mt-8 flex items-center justify-between text-tremor-label text-tremor-content dark:text-dark-tremor-content">
         <span>Category</span>

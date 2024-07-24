@@ -17,5 +17,7 @@ export const BarChartEmotions = ({ results }: { results: EmotionResults }) => (
     valueFormatter={dataFormatter}
     yAxisWidth={48}
     onValueChange={(v) => console.log(v)}
+    className="bg-white rounded-md drop-shadow-xl"
+    showAnimation={true}
   />
 );
