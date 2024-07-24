@@ -39,7 +39,7 @@ function filterEmotionResults(results: EmotionResults): EmotionResults {
 
   return {
     ...results,
-    emotions: filteredResults
+    emotions: filteredResults,
   };
 }
 
@@ -53,8 +53,8 @@ export default function Results({ params }: { params: { data: string } }) {
 
   return (
     <main className="flex h-screen flex-col">
-      <div className="container bg-gray-200 ">
-        <h2 className="text-4xl font-bold p-4">
+      <div className="container bg-gray-200 rounded-md drop-shadow-2xl">
+        <h2 className="text-4xl font-bold p-4 drop-shadow-xl">
           Here <span className="text-green-700"> are </span>your
           <span className="text-green-700"> Results</span>
         </h2>
@@ -64,7 +64,7 @@ export default function Results({ params }: { params: { data: string } }) {
           </div>
         </section>
         <section>
-          <div className="pt-10 flex flex-row">
+          <div className="py-10 flex flex-row">
             <div className="w-1/2">
               <BarChartEmotions results={results} />
             </div>
@@ -76,9 +76,10 @@ export default function Results({ params }: { params: { data: string } }) {
       </div>
       <div className="w-full flex justify-center items-end mt-4 mb-4">
         <p className="text-md text-gray-600">
-          The presented results are based on automated analysis and may not be entirely accurate.
+          The presented results are based on automated analysis and may not be
+          entirely accurate.
         </p>
       </div>
     </main>
-);
+  );
 }

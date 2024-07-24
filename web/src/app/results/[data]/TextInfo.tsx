@@ -22,21 +22,23 @@ export const TextInfo = ({ results }: { results: EmotionResults }) => {
   };
 
   // Sort emotions by total_seconds in descending order
-  const sortedEmotions = results.emotions.sort((a, b) => b.total_seconds - a.total_seconds);
+  const sortedEmotions = results.emotions.sort(
+    (a, b) => b.total_seconds - a.total_seconds
+  );
 
   return (
-    <>
+    <div className="flex flex-col justify-center h-full space-y-4">
       <p className="font-bold">
       Total analysis: {results.total_seconds} seconds
       </p>
       {sortedEmotions.map((emotion) => (
-        <p key={emotion.label} className="font-bold">
+        <p key={emotion.label} className="font-bold drop-shadow-xl">
           for {emotion.total_seconds} seconds you looked{" "}
           <span className={emotionColors[emotion.label]}>
             {emotionDescriptions[emotion.label]}
           </span>
         </p>
       ))}
-    </>
+    </div>
   );
 };
